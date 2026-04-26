@@ -98,8 +98,8 @@
     .alert-text { font-size:13px; color:var(--label2); line-height:1.4; }
 
     /* Toast */
-    .toast { position:fixed; bottom:calc(var(--tab-h) + 16px); left:50%; transform:translateX(-50%) translateY(100px); background:rgba(0,0,0,.85); color:#fff; padding:12px 20px; border-radius:20px; font-size:15px; font-weight:500; z-index:9999; transition:transform .35s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; max-width:calc(100% - 40px); text-align:center; }
-    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast { position:fixed; bottom:calc(var(--tab-h) + 16px); left:50%; transform:translateX(-50%) translateY(200px); background:rgba(0,0,0,.85); color:#fff; padding:12px 20px; border-radius:20px; font-size:15px; font-weight:500; z-index:9999; transition:transform .35s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; max-width:calc(100% - 40px); text-align:center; opacity:0; pointer-events:none; }
+    .toast.show { transform:translateX(-50%) translateY(0); opacity:1; pointer-events:auto; }
 
     /* Tab bar */
     .tab-bar { background:var(--bg2); border-top:.5px solid var(--sep); display:flex; align-items:flex-start; padding-top:8px; padding-bottom:var(--safe-bottom); flex-shrink:0; }
@@ -751,7 +751,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" aria-live="polite"></div>
 
 <style>
   .seg { flex:1; border:none; background:none; padding:7px 4px; border-radius:7px; font-size:13px; font-weight:600; color:var(--label2); cursor:pointer; transition:background .15s,color .15s; font-family:inherit; }
@@ -1648,7 +1648,10 @@ function showToast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(_tt);
-  _tt = setTimeout(()=>el.classList.remove('show'), 2500);
+  _tt = setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => { el.textContent = ''; }, 400);
+  }, 2500);
 }
 
 
