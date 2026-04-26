@@ -13,7 +13,7 @@
       --label: #000; --label2: #3C3C43CC; --label3: #3C3C4399;
       --blue: #007AFF; --green: #34C759; --orange: #FF9500; --red: #FF3B30; --purple: #AF52DE;
       --sep: #3C3C4349; --fill: #78788033;
-      --tab-h: 84px; --safe-top: env(safe-area-inset-top,44px); --safe-bottom: env(safe-area-inset-bottom,34px);
+      --tab-h: 100px; --safe-top: env(safe-area-inset-top,44px); --safe-bottom: env(safe-area-inset-bottom,34px);
     }
     @media (prefers-color-scheme: dark) {
       :root { --bg: #000; --bg2: #1C1C1E; --bg3: #2C2C2E; --label: #fff; --label2: #EBEBF5CC; --label3: #EBEBF599; --sep: #54545899; --fill: #78788052; }
@@ -102,10 +102,10 @@
     .toast.show { transform:translateX(-50%) translateY(0); opacity:1; pointer-events:auto; }
 
     /* Tab bar */
-    .tab-bar { background:var(--bg2); border-top:.5px solid var(--sep); display:flex; align-items:flex-start; padding-top:10px; padding-bottom:max(env(safe-area-inset-bottom, 34px), 28px); flex-shrink:0; }
+    .tab-bar { background:var(--bg2); border-top:.5px solid var(--sep); display:flex; align-items:flex-start; padding-top:10px; padding-bottom:30px; flex-shrink:0; padding-bottom:max(30px, env(safe-area-inset-bottom)); }
     .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:0 4px; opacity:.45; transition:opacity .15s; }
     .tab.active { opacity:1; }
-    .tab-ico { font-size:24px; line-height:1; }
+    .tab-ico { font-size:22px; line-height:1; }
     .tab-lbl { font-size:10px; font-weight:500; color:var(--label); }
     .tab.active .tab-lbl { color:var(--blue); }
 
