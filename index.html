@@ -157,7 +157,7 @@
     .perm-row:last-child { border-bottom:none; }
     .perm-section-name { flex:1; font-size:15px; font-weight:500; }
     .perm-toggle-group { display:flex; gap:4px; flex-shrink:0; }
-    .perm-toggle { display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:10px; border:1.5px solid var(--sep); background:none; cursor:pointer; font-size:12px; font-weight:600; font-family:inherit; color:var(--label3); transition:all .15s; }
+    .perm-toggle { display:flex; align-items:center; justify-content:center; gap:5px; padding:7px 0; width:76px; border-radius:10px; border:1.5px solid var(--sep); background:none; cursor:pointer; font-size:13px; font-weight:600; font-family:inherit; color:var(--label3); transition:all .15s; }
     .perm-toggle.on-view { background:#007AFF18; border-color:var(--blue); color:var(--blue); }
     .perm-toggle.on-edit { background:#34C75918; border-color:var(--green); color:var(--green); }
     .perm-toggle-dot { width:8px; height:8px; border-radius:50%; background:currentColor; opacity:.5; }
@@ -259,11 +259,21 @@
           <div class="form-card">
             <div class="form-row"><div class="form-lbl">Name</div><input class="form-inp" id="eu-name" placeholder="Full name"></div>
             <div class="form-row"><div class="form-lbl">Username</div><input class="form-inp" id="eu-user" placeholder="username" autocapitalize="none"></div>
-            <div class="form-row" style="border-bottom:none;"><div class="form-lbl">Password</div><input class="form-inp" id="eu-pass" type="password" placeholder="password"></div>
+            <div class="form-row"><div class="form-lbl">Password</div><input class="form-inp" id="eu-pass" type="password" placeholder="password"></div>
+            <div class="form-row" style="border-bottom:none;">
+              <div class="form-lbl">Admin Access</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+                <span id="eu-admin-label" style="font-size:13px;color:var(--label3);">Off</span>
+                <div id="eu-admin-toggle" onclick="toggleAdminDraft()" style="width:51px;height:31px;border-radius:16px;background:var(--fill);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;">
+                  <div id="eu-admin-knob" style="width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,.3);"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="sec">
+        <!-- Per-section perms — hidden when admin is on -->
+        <div id="eu-perms-section" class="sec">
           <div class="sec-hdr">Section Permissions</div>
           <div class="card" id="perm-grid">
             <!-- Rendered by JS -->
@@ -465,6 +475,7 @@
         <div style="background:var(--fill);border-radius:9px;padding:2px;display:flex;">
           <button class="seg active" data-rpt="orders" onclick="switchRptTab(this)">Orders</button>
           <button class="seg" data-rpt="receiving" onclick="switchRptTab(this)">Receiving</button>
+          <button class="seg" data-rpt="vendors" onclick="switchRptTab(this)">Vendors</button>
           <button class="seg" data-rpt="audit" onclick="switchRptTab(this)">Audit Log</button>
         </div>
         <div style="height:10px;"></div>
@@ -534,9 +545,9 @@
         <div class="sec" id="admin-section" style="display:none;">
           <div class="sec-hdr">Administration</div>
           <div class="card">
-            <div class="row" onclick="openUsersModal()">
-              <div class="row-icon ic-purple">👥</div>
-              <div class="row-body"><div class="row-title">Manage Users</div><div class="row-sub">Add, edit, or remove user accounts</div></div>
+            <div class="row" onclick="goTab('admin')">
+              <div class="row-icon ic-orange">⚙️</div>
+              <div class="row-body"><div class="row-title">Admin Panel</div><div class="row-sub">BOM editor, users, settings</div></div>
               <div class="chev">›</div>
             </div>
           </div>
@@ -562,6 +573,135 @@
       </div>
     </div>
 
+    <!-- ═══ ADMIN ═══ -->
+    <div class="screen" id="sc-admin">
+      <div class="nav">
+        <div class="nav-row"><div class="nav-title">Admin</div></div>
+      </div>
+
+      <!-- Segmented control -->
+      <div style="padding:10px 16px 0;background:var(--bg2);border-bottom:.5px solid var(--sep);">
+        <div style="background:var(--fill);border-radius:9px;padding:2px;display:flex;">
+          <button class="seg active" data-admin="bom" onclick="switchAdminSeg(this)">BOM</button>
+          <button class="seg" data-admin="vendors" onclick="switchAdminSeg(this)">Vendors</button>
+          <button class="seg" data-admin="users" onclick="switchAdminSeg(this)">Users</button>
+          <button class="seg" data-admin="settings" onclick="switchAdminSeg(this)">Settings</button>
+        </div>
+        <div style="height:10px;"></div>
+      </div>
+
+      <div class="scroll">
+
+        <!-- BOM EDITOR PANEL -->
+        <div id="admin-bom-panel">
+          <div class="sec" style="margin-top:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
+              <div class="sec-hdr" style="padding:0;">Building Models</div>
+              <button onclick="openBuildingModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">＋ New</button>
+            </div>
+
+            <!-- Import/Download row -->
+            <div style="display:flex;gap:8px;padding:0 16px 12px;">
+              <button onclick="downloadTemplate()" style="flex:1;border:1.5px solid var(--blue);background:none;color:var(--blue);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ Template</button>
+              <button onclick="document.getElementById('bom-xlsx-input').click()" style="flex:1;border:1.5px solid var(--green);background:none;color:var(--green);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⬆ Import Excel</button>
+              <input type="file" id="bom-xlsx-input" accept=".xlsx,.xls" style="display:none;" onchange="handleBOMImport(this)">
+            </div>
+
+            <div class="card" id="admin-buildings-list"></div>
+          </div>
+
+          <div class="sec">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
+              <div class="sec-hdr" style="padding:0;">Material Library</div>
+              <button onclick="openMaterialModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">＋ New</button>
+            </div>
+            <!-- Material template/import -->
+            <div style="display:flex;gap:8px;padding:0 16px 10px;">
+              <button onclick="downloadMatTemplate()" style="flex:1;border:1.5px solid var(--blue);background:none;color:var(--blue);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ Template</button>
+              <button onclick="document.getElementById('mat-xlsx-input').click()" style="flex:1;border:1.5px solid var(--green);background:none;color:var(--green);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬆ Import Excel</button>
+              <input type="file" id="mat-xlsx-input" accept=".xlsx,.xls" style="display:none;" onchange="handleMatImport(this)">
+            </div>
+            <div style="padding:0 16px 10px;">
+              <div style="background:var(--fill);border-radius:10px;display:flex;align-items:center;padding:0 10px;gap:6px;">
+                <span style="font-size:14px;color:var(--label3);">🔍</span>
+                <input type="text" id="admin-mat-search" placeholder="Search materials…" oninput="renderAdminMaterials()" style="flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--label);font-family:inherit;padding:9px 0;">
+              </div>
+            </div>
+            <div class="card" id="admin-mat-list"></div>
+          </div>
+        </div>
+
+        <!-- VENDORS PANEL -->
+        <div id="admin-vendors-panel" style="display:none;">
+          <div class="sec" style="margin-top:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
+              <div class="sec-hdr" style="padding:0;">Vendor Directory</div>
+              <button onclick="openVendorModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">＋ Add</button>
+            </div>
+            <div class="card" id="admin-vendors-list"></div>
+          </div>
+        </div>
+
+        <!-- USERS PANEL -->
+        <div id="admin-users-panel" style="display:none;">
+          <div class="sec" style="margin-top:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
+              <div class="sec-hdr" style="padding:0;">All Users</div>
+              <button onclick="openAddUserModal()" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">＋ Add User</button>
+            </div>
+            <div class="card" id="admin-users-list"></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS PANEL -->
+        <div id="admin-settings-panel" style="display:none;">
+          <div class="sec" style="margin-top:12px;">
+            <div class="sec-hdr">App Settings</div>
+            <div class="card">
+              <div class="row" style="cursor:default;">
+                <div class="row-icon ic-blue">🏢</div>
+                <div class="row-body"><div class="row-title">Company Name</div><div class="row-sub" id="settings-company-sub">Dean Shed Corp</div></div>
+              </div>
+              <div class="row" onclick="doLogout()">
+                <div class="row-icon ic-red">🚪</div>
+                <div class="row-body"><div class="row-title" style="color:var(--red);">Sign Out</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="sec">
+            <div class="sec-hdr">Data</div>
+            <div class="card">
+              <div class="row" style="cursor:default;">
+                <div class="row-icon ic-green">📦</div>
+                <div class="row-body"><div class="row-title">Total Materials in Library</div></div>
+                <div class="row-val" id="settings-mat-count"></div>
+              </div>
+              <div class="row" style="cursor:default;">
+                <div class="row-icon ic-blue">🏠</div>
+                <div class="row-body"><div class="row-title">Building Models</div></div>
+                <div class="row-val" id="settings-bld-count"></div>
+              </div>
+              <div class="row" style="cursor:default;border-bottom:none;">
+                <div class="row-icon ic-purple">📋</div>
+                <div class="row-body"><div class="row-title">Total Orders</div></div>
+                <div class="row-val" id="settings-ord-count"></div>
+              </div>
+            </div>
+          </div>
+          <div class="sec">
+            <div class="sec-hdr">Version</div>
+            <div class="card">
+              <div class="row" style="cursor:default;border-bottom:none;">
+                <div class="row-icon ic-gray">ℹ️</div>
+                <div class="row-body"><div class="row-title">Shed ERP</div><div class="row-sub">v3.0 · Built for Dean Shed Corp</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div><!-- end screen-wrap -->
 
   <!-- TAB BAR -->
@@ -569,8 +709,8 @@
     <div class="tab active" onclick="goTab('inv')" id="tab-inv"><div class="tab-ico">📦</div><div class="tab-lbl">Inventory</div></div>
     <div class="tab" onclick="goTab('recv')" id="tab-recv"><div class="tab-ico">📥</div><div class="tab-lbl">Receive</div></div>
     <div class="tab" onclick="goTab('fulfill')" id="tab-fulfill"><div class="tab-ico">✅</div><div class="tab-lbl">Fulfill</div></div>
-    <div class="tab" onclick="goTab('kb')" id="tab-kb"><div class="tab-ico">📚</div><div class="tab-lbl">Knowledge</div></div>
     <div class="tab" onclick="goTab('rpt')" id="tab-rpt"><div class="tab-ico">📊</div><div class="tab-lbl">Report</div></div>
+    <div class="tab" id="tab-admin" style="display:none;" onclick="goTab('admin')"><div class="tab-ico">⚙️</div><div class="tab-lbl">Admin</div></div>
     <div class="tab" onclick="goTab('profile')" id="tab-profile"><div class="tab-ico">👤</div><div class="tab-lbl">Profile</div></div>
   </div>
 </div>
@@ -636,9 +776,13 @@
             <div class="form-lbl">Unit Price</div>
             <input class="form-inp" id="mat-price" type="number" step="0.01" placeholder="0.00">
           </div>
-          <div class="form-row" style="border-bottom:none;">
+          <div class="form-row">
             <div class="form-lbl">Category</div>
             <input class="form-inp" id="mat-cat" placeholder="e.g. FLOOR, WALLS, ROOF…">
+          </div>
+          <div class="form-row" style="border-bottom:none;">
+            <div class="form-lbl">Vendor</div>
+            <input class="form-inp" id="mat-vendor" placeholder="Supplier name" list="vendor-names-datalist">
           </div>
         </div>
       </div>
@@ -649,6 +793,7 @@
     </div>
   </div>
 </div>
+<datalist id="vendor-names-datalist"></datalist>
 
 
 <!-- BOL Scan Modal -->
@@ -751,6 +896,45 @@
   </div>
 </div>
 
+<!-- Vendor Modal -->
+<div class="modal-overlay" id="vendor-modal" style="z-index:200;">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="vendor-modal-title">Add Vendor</div>
+      <button class="modal-close" onclick="closeVendorModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sec">
+        <div class="sec-hdr">Company Info</div>
+        <div class="form-card">
+          <div class="form-row"><div class="form-lbl">Company</div><input class="form-inp" id="v-name" placeholder="Vendor name"></div>
+          <div class="form-row"><div class="form-lbl">Contact</div><input class="form-inp" id="v-contact" placeholder="Contact person"></div>
+          <div class="form-row" style="border-bottom:none;"><div class="form-lbl">Category</div><input class="form-inp" id="v-cat" placeholder="e.g. Lumber, Metal, Paint"></div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-hdr">Contact Details</div>
+        <div class="form-card">
+          <div class="form-row"><div class="form-lbl">Phone</div><input class="form-inp" id="v-phone" type="tel" placeholder="(555) 000-0000"></div>
+          <div class="form-row"><div class="form-lbl">Email</div><input class="form-inp" id="v-email" type="email" placeholder="vendor@example.com"></div>
+          <div class="form-row" style="border-bottom:none;"><div class="form-lbl">Website</div><input class="form-inp" id="v-web" placeholder="www.example.com"></div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-hdr">Notes</div>
+        <div class="form-card">
+          <div class="form-row" style="border-bottom:none;"><textarea id="v-notes" placeholder="Account numbers, terms, notes…" style="flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--label);font-family:inherit;resize:none;min-height:72px;line-height:1.5;"></textarea></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:0 16px 8px;">
+        <button class="btn btn-blue" style="width:auto;flex:1;margin:0;" onclick="saveVendorModal()">Save Vendor</button>
+        <button class="btn btn-red" style="width:auto;padding:16px 18px;margin:0;display:none;" id="v-del-btn" onclick="deleteVendor()">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" aria-live="polite"></div>
 
 <style>
@@ -811,9 +995,26 @@ let matLib = [
   { id: 'm39', desc: "White Caulk", price: 1.90, category: "PAINT" },
   { id: 'm40', desc: "Clear Silicone", price: 9.25, category: "PAINT" },
   { id: 'm41', desc: "Touch Up Cans", price: 1.83, category: "PAINT" },
+  // 10-wide new materials
+  { id: 'm42', desc: "4x6 - 20' Notched 4x6 Runners", price: 32.00, category: "FLOOR" },
+  { id: 'm43', desc: "2x6x117 - Pressure Treated", price: 4.55, category: "FLOOR" },
+  { id: 'm44', desc: "2x6x144 - Pressure Treated", price: 5.30, category: "FLOOR" },
+  { id: 'm45', desc: "51\" - Metal Ag Panel (10L)", price: 11.65, category: "METAL" },
+  { id: 'm46', desc: "10.6 ft Metal Rake", price: 16.17, category: "METAL" },
+  { id: 'm47', desc: "Heavy Duty Latches (Barrel Plunger)", price: 2.38, category: "DOOR HARDWARE" },
+  { id: 'm48', desc: "6' Diamond Plate Threshold", price: 6.92, category: "DOOR HARDWARE" },
+  { id: 'm49', desc: "SilverTech LP SmartSiding 3/8 8\" OC", price: 38.43, category: "WALLS" },
+  { id: 'm50', desc: "TechShield OSB 7/16\"", price: 16.99, category: "ROOF" },
 ];
 
-// Building models (knowledge base)
+// Vendor directory
+let vendors = [
+  { id:'v1', name:'Lowe\'s Building Supply', contact:'', phone:'', email:'', website:'www.lowes.com', category:'General', notes:'Primary lumber & hardware supplier' },
+  { id:'v2', name:'LP Building Products', contact:'', phone:'', email:'', website:'www.lpcorp.com', category:'Siding & Trim', notes:'LP SmartSiding, trim boards' },
+  { id:'v3', name:'PPG Paints', contact:'', phone:'', email:'', website:'www.ppg.com', category:'Paint', notes:'PPG exterior paint' },
+];
+let vendorIdCounter = 10;
+let editingVendorId = null;
 let buildings = [
   {
     id: 'b1', name: 'Basic Lofted 8×8', materialCost: 1026.11,
@@ -852,7 +1053,203 @@ let buildings = [
       { matId:'m30', qty:24 }, { matId:'m31', qty:2 }, { matId:'m33', qty:1.5 }, { matId:'m34', qty:1.5 }, { matId:'m37', qty:2 },
       { matId:'m38', qty:3 }, { matId:'m39', qty:0.5 }, { matId:'m41', qty:2 },
     ]
-  }
+  },
+
+  // ── BASIC LOFTED 10-WIDE ──
+  {
+    id: 'b4', name: 'Basic Lofted 10×12', materialCost: 1447.42,
+    bom: [
+      // FLOOR
+      { matId:'m2', qty:2 }, { matId:'m44', qty:2 }, { matId:'m43', qty:12 }, { matId:'m6', qty:2 }, { matId:'m7', qty:3.75 },
+      { matId:'m8', qty:1.5 }, { matId:'m9', qty:1.5 }, { matId:'m10', qty:8 },
+      // WALLS
+      { matId:'m14', qty:6 }, { matId:'m13', qty:12 }, { matId:'m12', qty:40 }, { matId:'m16', qty:13 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:2 }, { matId:'m8', qty:2 },
+      // ROOF
+      { matId:'m14', qty:7 }, { matId:'m17', qty:42 }, { matId:'m13', qty:4 }, { matId:'m19', qty:7 },
+      { matId:'m18', qty:6 }, { matId:'m8', qty:1.5 }, { matId:'m9', qty:1 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m47', qty:2 },
+      { matId:'m27', qty:2 }, { matId:'m48', qty:1 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m24', qty:60 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:8 }, { matId:'m45', qty:8 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:1 }, { matId:'m34', qty:1 }, { matId:'m36', qty:0.25 }, { matId:'m35', qty:36 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:3.5 }, { matId:'m40', qty:0.5 }, { matId:'m41', qty:2 }, { matId:'m39', qty:0.5 },
+    ]
+  },
+  {
+    id: 'b5', name: 'Basic Lofted 10×16', materialCost: 1752.11,
+    bom: [
+      // FLOOR
+      { matId:'m1', qty:2 }, { matId:'m3', qty:2 }, { matId:'m43', qty:15 }, { matId:'m6', qty:2 }, { matId:'m7', qty:5 },
+      { matId:'m8', qty:2 }, { matId:'m9', qty:2 }, { matId:'m10', qty:10 },
+      // WALLS
+      { matId:'m11', qty:6 }, { matId:'m13', qty:12 }, { matId:'m12', qty:46 }, { matId:'m16', qty:15 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:2.5 }, { matId:'m8', qty:2.5 },
+      // ROOF
+      { matId:'m14', qty:9 }, { matId:'m17', qty:54 }, { matId:'m13', qty:4 }, { matId:'m19', qty:10 },
+      { matId:'m18', qty:8 }, { matId:'m8', qty:2 }, { matId:'m9', qty:1.5 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m27', qty:2 },
+      { matId:'m24', qty:60 }, { matId:'m48', qty:1 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m47', qty:2 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:12 }, { matId:'m45', qty:12 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:1.5 }, { matId:'m34', qty:1.5 }, { matId:'m36', qty:0.5 }, { matId:'m35', qty:32 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:3.5 }, { matId:'m40', qty:0.5 }, { matId:'m41', qty:2 }, { matId:'m39', qty:0.5 },
+    ]
+  },
+  {
+    id: 'b6', name: 'Basic Lofted 10×20', materialCost: 2032.73,
+    bom: [
+      // FLOOR
+      { matId:'m42', qty:2 }, { matId:'m3', qty:2.5 }, { matId:'m43', qty:18 }, { matId:'m7', qty:6.25 },
+      { matId:'m8', qty:2.5 }, { matId:'m9', qty:2.5 }, { matId:'m10', qty:12 },
+      // WALLS
+      { matId:'m11', qty:8 }, { matId:'m13', qty:12 }, { matId:'m12', qty:52 }, { matId:'m16', qty:17 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:3 }, { matId:'m8', qty:3 },
+      // ROOF
+      { matId:'m14', qty:11 }, { matId:'m17', qty:66 }, { matId:'m13', qty:4 }, { matId:'m19', qty:12 },
+      { matId:'m18', qty:10 }, { matId:'m9', qty:2.5 }, { matId:'m8', qty:2 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m47', qty:2 },
+      { matId:'m48', qty:1 }, { matId:'m27', qty:2 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m24', qty:60 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:14 }, { matId:'m45', qty:14 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:2 }, { matId:'m34', qty:1.75 }, { matId:'m36', qty:0.75 }, { matId:'m35', qty:60 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:4.5 }, { matId:'m40', qty:0.5 }, { matId:'m39', qty:0.5 }, { matId:'m41', qty:2 },
+    ]
+  },
+  {
+    id: 'b7', name: 'Basic Lofted 10×24', materialCost: 2270.42,
+    bom: [
+      // FLOOR
+      { matId:'m1', qty:3 }, { matId:'m3', qty:3 }, { matId:'m43', qty:21 }, { matId:'m7', qty:7.5 },
+      { matId:'m8', qty:3 }, { matId:'m9', qty:3 }, { matId:'m10', qty:14 },
+      // WALLS
+      { matId:'m11', qty:9 }, { matId:'m13', qty:12 }, { matId:'m12', qty:58 }, { matId:'m16', qty:19 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:3.5 }, { matId:'m8', qty:3.5 },
+      // ROOF
+      { matId:'m14', qty:13 }, { matId:'m17', qty:78 }, { matId:'m13', qty:4 }, { matId:'m19', qty:14 },
+      { matId:'m18', qty:12 }, { matId:'m9', qty:3 }, { matId:'m8', qty:2.5 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m47', qty:2 },
+      { matId:'m48', qty:1 }, { matId:'m27', qty:2 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m24', qty:60 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:16 }, { matId:'m45', qty:16 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:2 }, { matId:'m34', qty:2 }, { matId:'m36', qty:1 }, { matId:'m35', qty:72 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:4.5 }, { matId:'m40', qty:0.5 }, { matId:'m39', qty:0.5 }, { matId:'m41', qty:2 },
+    ]
+  },
+
+  // ── CLASSIC LOFTED 10-WIDE ──
+  {
+    id: 'b8', name: 'Classic Lofted 10×12', materialCost: 1603.07,
+    bom: [
+      // FLOOR (same as Basic 10x12)
+      { matId:'m2', qty:2 }, { matId:'m44', qty:2 }, { matId:'m43', qty:12 }, { matId:'m6', qty:2 }, { matId:'m7', qty:3.75 },
+      { matId:'m8', qty:1.5 }, { matId:'m9', qty:1.5 }, { matId:'m10', qty:8 },
+      // WALLS — SilverTech siding
+      { matId:'m14', qty:6 }, { matId:'m13', qty:12 }, { matId:'m12', qty:40 }, { matId:'m49', qty:13 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:2 }, { matId:'m8', qty:2 },
+      // ROOF — TechShield OSB
+      { matId:'m14', qty:7 }, { matId:'m17', qty:42 }, { matId:'m13', qty:4 }, { matId:'m50', qty:7 },
+      { matId:'m18', qty:6 }, { matId:'m8', qty:1.5 }, { matId:'m9', qty:1 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m47', qty:2 },
+      { matId:'m27', qty:2 }, { matId:'m48', qty:1 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m24', qty:60 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:8 }, { matId:'m45', qty:8 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:1 }, { matId:'m34', qty:1 }, { matId:'m36', qty:0.25 }, { matId:'m35', qty:36 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:3.5 }, { matId:'m40', qty:0.5 }, { matId:'m41', qty:2 }, { matId:'m39', qty:0.5 },
+    ]
+  },
+  {
+    id: 'b9', name: 'Classic Lofted 10×16', materialCost: 1943.61,
+    bom: [
+      // FLOOR
+      { matId:'m1', qty:2 }, { matId:'m3', qty:2 }, { matId:'m43', qty:15 }, { matId:'m6', qty:2 }, { matId:'m7', qty:5 },
+      { matId:'m8', qty:2 }, { matId:'m9', qty:2 }, { matId:'m10', qty:10 },
+      // WALLS — SilverTech siding
+      { matId:'m11', qty:6 }, { matId:'m13', qty:12 }, { matId:'m12', qty:46 }, { matId:'m49', qty:15 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:2.5 }, { matId:'m8', qty:2.5 },
+      // ROOF — TechShield OSB
+      { matId:'m14', qty:9 }, { matId:'m17', qty:54 }, { matId:'m13', qty:4 }, { matId:'m50', qty:10 },
+      { matId:'m18', qty:8 }, { matId:'m8', qty:2 }, { matId:'m9', qty:1.5 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m27', qty:2 },
+      { matId:'m24', qty:60 }, { matId:'m48', qty:1 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m47', qty:2 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:12 }, { matId:'m45', qty:12 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:1.5 }, { matId:'m34', qty:1.5 }, { matId:'m36', qty:0.5 }, { matId:'m35', qty:32 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:3.5 }, { matId:'m40', qty:0.5 }, { matId:'m41', qty:2 }, { matId:'m39', qty:0.5 },
+    ]
+  },
+  {
+    id: 'b10', name: 'Classic Lofted 10×20', materialCost: 2253.89,
+    bom: [
+      // FLOOR
+      { matId:'m42', qty:2 }, { matId:'m3', qty:2.5 }, { matId:'m43', qty:18 }, { matId:'m7', qty:6.25 },
+      { matId:'m8', qty:2.5 }, { matId:'m9', qty:2.5 }, { matId:'m10', qty:12 },
+      // WALLS — SilverTech siding
+      { matId:'m11', qty:8 }, { matId:'m13', qty:12 }, { matId:'m12', qty:52 }, { matId:'m49', qty:17 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:3 }, { matId:'m8', qty:3 },
+      // ROOF — TechShield OSB
+      { matId:'m14', qty:11 }, { matId:'m17', qty:66 }, { matId:'m13', qty:4 }, { matId:'m50', qty:12 },
+      { matId:'m18', qty:10 }, { matId:'m9', qty:2.5 }, { matId:'m8', qty:2 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m47', qty:2 },
+      { matId:'m48', qty:1 }, { matId:'m27', qty:2 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m24', qty:60 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:14 }, { matId:'m45', qty:14 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:2 }, { matId:'m34', qty:1.75 }, { matId:'m36', qty:0.75 }, { matId:'m35', qty:60 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:4.5 }, { matId:'m40', qty:0.5 }, { matId:'m39', qty:0.5 }, { matId:'m41', qty:2 },
+    ]
+  },
+  {
+    id: 'b11', name: 'Classic Lofted 10×24', materialCost: 2521.24,
+    bom: [
+      // FLOOR
+      { matId:'m1', qty:3 }, { matId:'m3', qty:3 }, { matId:'m43', qty:21 }, { matId:'m7', qty:7.5 },
+      { matId:'m8', qty:3 }, { matId:'m9', qty:3 }, { matId:'m10', qty:14 },
+      // WALLS — SilverTech siding
+      { matId:'m11', qty:9 }, { matId:'m13', qty:12 }, { matId:'m12', qty:58 }, { matId:'m49', qty:19 },
+      { matId:'m15', qty:2.5 }, { matId:'m9', qty:3.5 }, { matId:'m8', qty:3.5 },
+      // ROOF — TechShield OSB
+      { matId:'m14', qty:13 }, { matId:'m17', qty:78 }, { matId:'m13', qty:4 }, { matId:'m50', qty:14 },
+      { matId:'m18', qty:12 }, { matId:'m9', qty:3 }, { matId:'m8', qty:2.5 },
+      // DOOR HARDWARE
+      { matId:'m20', qty:6 }, { matId:'m21', qty:1 }, { matId:'m22', qty:1 }, { matId:'m47', qty:2 },
+      { matId:'m48', qty:1 }, { matId:'m27', qty:2 }, { matId:'m23', qty:6 }, { matId:'m26', qty:6 }, { matId:'m24', qty:60 },
+      // TRIM
+      { matId:'m28', qty:10 }, { matId:'m29', qty:2.5 },
+      // METAL
+      { matId:'m30', qty:16 }, { matId:'m45', qty:16 }, { matId:'m46', qty:2 }, { matId:'m32', qty:1 },
+      { matId:'m33', qty:2 }, { matId:'m34', qty:2 }, { matId:'m36', qty:1 }, { matId:'m35', qty:72 }, { matId:'m37', qty:2 },
+      // PAINT
+      { matId:'m38', qty:4.5 }, { matId:'m40', qty:0.5 }, { matId:'m39', qty:0.5 }, { matId:'m41', qty:2 },
+    ]
+  },
 ];
 
 // Inventory (live stock)
@@ -878,23 +1275,26 @@ let editingBldId = null;
 let editingMatId = null;
 let bomLines = []; // temp BOM while editing
 let matIdCounter = 100;
-let bldIdCounter = 10;
+let bldIdCounter = 20;
 let recvIdCounter = 0;
 
 // ══════════════════════════════
 // TAB NAV
 // ══════════════════════════════
 function goTab(id) {
-  if (currentUser && id !== 'profile') {
+  if (id === 'admin' && (!currentUser || !currentUser.isAdmin)) { showToast('🔒 Admin access required'); return; }
+  if (currentUser && id !== 'profile' && id !== 'admin') {
     if (!currentUser.isAdmin && !canView(id)) { showToast('🔒 You don\'t have access to this section'); return; }
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('sc-' + id).classList.add('active');
-  document.getElementById('tab-' + id).classList.add('active');
+  const tabEl = document.getElementById('tab-' + id);
+  if (tabEl) tabEl.classList.add('active');
   if (id === 'inv') renderInv();
   if (id === 'fulfill') { populateShedSelect(); updateFulfill(); renderRecent(); }
   if (id === 'kb') { renderKBBuildings(); renderKBMaterials(); }
+  if (id === 'admin') renderAdminTab();
   if (id === 'rpt') renderRpt();
   if (id === 'profile') renderProfileScreen();
 }
@@ -1327,6 +1727,7 @@ function saveBuildingModal() {
   }
   closeBuildingModal();
   renderKBBuildings();
+  renderAdminBuildings();
   populateShedSelect();
   showToast(editingBldId ? '✓ Building updated' : '✓ Building added');
 }
@@ -1338,6 +1739,7 @@ function deleteBuilding() {
   if (bldToDelete) addAudit('DELETE_BUILDING', 'BUILDING', `Deleted building "${bldToDelete.name}"`, null);
   closeBuildingModal();
   renderKBBuildings();
+  renderAdminBuildings();
   populateShedSelect();
   showToast('Building deleted');
 }
@@ -1351,7 +1753,11 @@ function openMaterialModal(matId) {
   document.getElementById('mat-desc').value = mat ? mat.desc : '';
   document.getElementById('mat-price').value = mat ? mat.price : '';
   document.getElementById('mat-cat').value = mat ? mat.category : '';
+  document.getElementById('mat-vendor').value = mat ? (mat.vendor||'') : '';
   document.getElementById('mat-del-btn').style.display = mat ? 'block' : 'none';
+  // Populate vendor datalist
+  const dl = document.getElementById('vendor-names-datalist');
+  if (dl) dl.innerHTML = vendors.map(v=>`<option value="${v.name}">`).join('');
   modal.classList.add('open');
 }
 
@@ -1361,6 +1767,7 @@ function saveMaterialModal() {
   const desc = document.getElementById('mat-desc').value.trim();
   const price = parseFloat(document.getElementById('mat-price').value)||0;
   const category = document.getElementById('mat-cat').value.trim().toUpperCase()||'OTHER';
+  const vendor = document.getElementById('mat-vendor').value.trim();
   if (!desc) { showToast('Please enter a description'); return; }
 
   if (editingMatId) {
@@ -1369,18 +1776,20 @@ function saveMaterialModal() {
     if (mat.desc !== desc) changes.push({ field:'description', from:mat.desc, to:desc });
     if (mat.price !== price) changes.push({ field:'unit price', from:mat.price, to:price });
     if (mat.category !== category) changes.push({ field:'category', from:mat.category, to:category });
-    mat.desc = desc; mat.price = price; mat.category = category;
+    if ((mat.vendor||'') !== vendor) changes.push({ field:'vendor', from:mat.vendor||'', to:vendor });
+    mat.desc = desc; mat.price = price; mat.category = category; mat.vendor = vendor;
     const inv = inventory.find(i => i.desc === mat.desc);
     if (inv) { inv.price = price; inv.category = category; }
     if (changes.length) addAudit('EDIT_MATERIAL', category, `Edited material "${desc}"`, changes);
   } else {
-    const newMat = { id:'m'+(++matIdCounter), desc, price, category };
+    const newMat = { id:'m'+(++matIdCounter), desc, price, category, vendor };
     matLib.push(newMat);
     inventory.push({ desc, qty:0, price, category });
-    addAudit('ADD_MATERIAL', category, `Added new material "${desc}" at $${price.toFixed(2)}/unit`, { price, category });
+    addAudit('ADD_MATERIAL', category, `Added new material "${desc}" at $${price.toFixed(2)}/unit`, { price, category, vendor });
   }
   closeMaterialModal();
   renderKBMaterials();
+  renderAdminMaterials();
   showToast(editingMatId ? '✓ Material updated' : '✓ Material added to library & inventory');
 }
 
@@ -1394,6 +1803,7 @@ function deleteMaterial() {
   }
   closeMaterialModal();
   renderKBMaterials();
+  renderAdminMaterials();
   showToast('Material deleted');
 }
 
@@ -1566,6 +1976,79 @@ function applyRptFilters() {
       list.appendChild(div);
     });
 
+  } else if (rptTab === 'vendors') {
+    stat1lbl.textContent = 'Vendors'; stat2lbl.textContent = 'Total Spend';
+
+    // Build spend per vendor from receive ledger
+    const vendorSpend = {};
+    receiveLedger.forEach(r => {
+      r.items.forEach(item => {
+        const vendorName = item.vendor || (matLib.find(m=>m.desc===item.desc)||{}).vendor || 'Unknown';
+        if (!vendorSpend[vendorName]) vendorSpend[vendorName] = { total:0, items:[], shipments:0 };
+        vendorSpend[vendorName].total += item.qty * item.price;
+        vendorSpend[vendorName].items.push({ ...item, ts: r.ts });
+        vendorSpend[vendorName].shipments++;
+      });
+    });
+
+    // Also tally from material library defaults
+    matLib.forEach(m => {
+      if (m.vendor && !vendorSpend[m.vendor]) vendorSpend[m.vendor] = { total:0, items:[], shipments:0 };
+    });
+
+    const f = getRptFilters();
+    const vendorEntries = Object.entries(vendorSpend)
+      .filter(([name]) => !f.search || name.toLowerCase().includes(f.search))
+      .sort((a,b) => b[1].total - a[1].total);
+
+    const grandTotal = vendorEntries.reduce((s,[,d])=>s+d.total,0);
+    stat1.textContent = vendorEntries.length;
+    stat2.textContent = '$' + grandTotal.toFixed(2);
+
+    if (!vendorEntries.length) {
+      empty.style.display='flex';
+      document.getElementById('rpt-empty-ttl').textContent = 'No vendor spend data yet';
+      document.getElementById('rpt-empty-sub').textContent = 'Spend appears here when materials are received with a vendor';
+      return;
+    }
+    empty.style.display='none';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'margin:0 16px;';
+
+    vendorEntries.forEach(([name, data], i) => {
+      const pct = grandTotal > 0 ? (data.total / grandTotal * 100) : 0;
+      const vendorInfo = vendors.find(v => v.name.toLowerCase() === name.toLowerCase());
+      const div = document.createElement('div');
+      div.className = 'sec';
+      div.innerHTML = `
+        <div class="card">
+          <div style="padding:14px 16px;border-bottom:.5px solid var(--sep);">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div>
+                <div style="font-size:12px;color:var(--label3);margin-top:2px;">${data.shipments} shipment${data.shipments!==1?'s':''} · ${pct.toFixed(1)}% of total spend</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--green);flex-shrink:0;">$${data.total.toFixed(2)}</div>
+            </div>
+            <div style="height:6px;background:var(--fill);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:var(--blue);border-radius:3px;transition:width .5s;"></div>
+            </div>
+            ${vendorInfo ? `
+              <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+                ${vendorInfo.phone?`<a href="tel:${vendorInfo.phone}" style="display:inline-flex;align-items:center;gap:4px;background:#34C75915;color:var(--green);border:1px solid #34C75940;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;text-decoration:none;">📞 Call</a>`:''}
+                ${vendorInfo.email?`<a href="mailto:${vendorInfo.email}" style="display:inline-flex;align-items:center;gap:4px;background:#007AFF15;color:var(--blue);border:1px solid #007AFF40;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;text-decoration:none;">✉️ Email</a>`:''}
+              </div>` : ''}
+          </div>
+          <div style="padding:8px 16px;max-height:160px;overflow-y:auto;">
+            ${[...new Set(data.items.map(i=>i.desc))].slice(0,6).map(desc=>`
+              <div style="font-size:12px;color:var(--label3);padding:3px 0;">• ${desc}</div>`).join('')}
+            ${data.items.length > 6 ? `<div style="font-size:11px;color:var(--label3);padding:3px 0;font-style:italic;">+ ${data.items.length-6} more items</div>` : ''}
+          </div>
+        </div>`;
+      list.appendChild(div);
+    });
+
   } else if (rptTab === 'audit') {
     stat1lbl.textContent = 'Log Entries'; stat2lbl.textContent = 'Changes';
     const AUDIT_ICONS = { RECEIVE:'📥', ADD_MATERIAL:'➕', EDIT_MATERIAL:'✏️', DELETE_MATERIAL:'🗑', PRICE_CHANGE:'💰', FULFILL:'✅', ADD_BUILDING:'🏠', EDIT_BUILDING:'🏠', DELETE_BUILDING:'🏠' };
@@ -1638,6 +2121,286 @@ function applyRptFilters() {
 }
 
 function renderRpt() { applyRptFilters(); }
+
+// ══════════════════════════════
+// ADMIN TAB
+// ══════════════════════════════
+let adminSeg = 'bom';
+
+function switchAdminSeg(btn) {
+  adminSeg = btn.dataset.admin;
+  document.querySelectorAll('[data-admin]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('admin-bom-panel').style.display     = adminSeg === 'bom'      ? 'block' : 'none';
+  document.getElementById('admin-vendors-panel').style.display = adminSeg === 'vendors'  ? 'block' : 'none';
+  document.getElementById('admin-users-panel').style.display   = adminSeg === 'users'    ? 'block' : 'none';
+  document.getElementById('admin-settings-panel').style.display= adminSeg === 'settings' ? 'block' : 'none';
+  if (adminSeg === 'bom')      { renderAdminBuildings(); renderAdminMaterials(); }
+  if (adminSeg === 'vendors')  renderAdminVendors();
+  if (adminSeg === 'users')    renderAdminUsers();
+  if (adminSeg === 'settings') renderAdminSettings();
+}
+
+function renderAdminTab() {
+  document.querySelectorAll('[data-admin]').forEach(b => b.classList.remove('active'));
+  const bomBtn = document.querySelector('[data-admin="bom"]');
+  if (bomBtn) bomBtn.classList.add('active');
+  adminSeg = 'bom';
+  document.getElementById('admin-bom-panel').style.display      = 'block';
+  document.getElementById('admin-vendors-panel').style.display  = 'none';
+  document.getElementById('admin-users-panel').style.display    = 'none';
+  document.getElementById('admin-settings-panel').style.display = 'none';
+  renderAdminBuildings();
+  renderAdminMaterials();
+}
+
+function renderAdminBuildings() {
+  const list = document.getElementById('admin-buildings-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!buildings.length) {
+    list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--label3);font-size:15px;">No buildings yet</div>';
+    return;
+  }
+  buildings.forEach((b, i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    if (i === buildings.length - 1) row.style.borderBottom = 'none';
+    row.innerHTML = `
+      <div class="row-icon ic-blue" style="font-size:18px;">🏠</div>
+      <div class="row-body">
+        <div class="row-title">${b.name}</div>
+        <div class="row-sub">${b.bom.length} materials · $${b.materialCost.toFixed(2)} cost</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="openAdminBOMEditor('${b.id}')" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Edit BOM</button>
+        <div class="chev">›</div>
+      </div>`;
+    row.onclick = (e) => { if (!e.target.closest('button')) openBuildingModal(b.id); };
+    list.appendChild(row);
+  });
+}
+
+function renderAdminMaterials() {
+  const q = (document.getElementById('admin-mat-search')||{value:''}).value.toLowerCase();
+  const filtered = matLib.filter(m => !q || m.desc.toLowerCase().includes(q) || m.category.toLowerCase().includes(q) || (m.vendor||'').toLowerCase().includes(q));
+  const list = document.getElementById('admin-mat-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!filtered.length) { list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--label3);font-size:15px;">No materials found</div>'; return; }
+
+  const byCat = {};
+  filtered.forEach(m => { if (!byCat[m.category]) byCat[m.category]=[]; byCat[m.category].push(m); });
+
+  Object.entries(byCat).forEach(([cat, mats]) => {
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:10px 16px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);';
+    hdr.textContent = cat;
+    list.appendChild(hdr);
+    mats.forEach(m => {
+      const emoji = CAT_EMOJIS[cat]||'📦';
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <div class="row-icon" style="background:${CAT_COLORS[cat]||'var(--fill)'};font-size:16px;">${emoji}</div>
+        <div class="row-body">
+          <div class="row-title" style="font-size:15px;">${m.desc}</div>
+          <div class="row-sub">$${m.price.toFixed(2)}/unit${m.vendor?' · '+m.vendor:''}</div>
+        </div>
+        <div class="chev">›</div>`;
+      row.onclick = () => openMaterialModal(m.id);
+      list.appendChild(row);
+    });
+  });
+}
+
+// ── Vendor Directory ──
+function renderAdminVendors() {
+  const list = document.getElementById('admin-vendors-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!vendors.length) {
+    list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--label3);font-size:15px;">No vendors yet — tap ＋ Add</div>';
+    return;
+  }
+  vendors.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:14px 16px;border-bottom:.5px solid var(--sep);';
+    if (i === vendors.length-1) row.style.borderBottom = 'none';
+
+    const matCount = matLib.filter(m => (m.vendor||'').toLowerCase() === v.name.toLowerCase()).length;
+    row.innerHTML = `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.name}</div>
+          <div style="font-size:12px;color:var(--label3);margin-top:2px;">${v.category||''}${v.contact?' · '+v.contact:''}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+            ${v.phone?`<a href="tel:${v.phone}" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;background:#34C75915;color:var(--green);border:1px solid #34C75940;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;text-decoration:none;">📞 Call</a>`:''}
+            ${v.email?`<a href="mailto:${v.email}" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;background:#007AFF15;color:var(--blue);border:1px solid #007AFF40;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;text-decoration:none;">✉️ Email</a>`:''}
+            ${v.website?`<a href="https://${v.website.replace(/^https?:\/\//,'')}" target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;background:#FF950015;color:var(--orange);border:1px solid #FF950040;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;text-decoration:none;">🌐 Web</a>`:''}
+          </div>
+          ${v.notes?`<div style="font-size:12px;color:var(--label3);margin-top:6px;font-style:italic;">${v.notes}</div>`:''}
+          ${matCount?`<div style="font-size:11px;color:var(--label3);margin-top:4px;">${matCount} material${matCount!==1?'s':''} in library</div>`:''}
+        </div>
+        <button onclick="openVendorModal('${v.id}')" style="background:var(--fill);border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--label2);cursor:pointer;font-family:inherit;flex-shrink:0;">Edit</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function openVendorModal(vendorId) {
+  editingVendorId = vendorId;
+  const v = vendorId ? vendors.find(x => x.id === vendorId) : null;
+  document.getElementById('vendor-modal-title').textContent = v ? 'Edit Vendor' : 'Add Vendor';
+  document.getElementById('v-name').value    = v ? v.name    : '';
+  document.getElementById('v-contact').value = v ? v.contact : '';
+  document.getElementById('v-cat').value     = v ? v.category: '';
+  document.getElementById('v-phone').value   = v ? v.phone   : '';
+  document.getElementById('v-email').value   = v ? v.email   : '';
+  document.getElementById('v-web').value     = v ? v.website : '';
+  document.getElementById('v-notes').value   = v ? v.notes   : '';
+  document.getElementById('v-del-btn').style.display = v ? 'flex' : 'none';
+  document.getElementById('vendor-modal').classList.add('open');
+}
+
+function closeVendorModal() { document.getElementById('vendor-modal').classList.remove('open'); }
+
+function saveVendorModal() {
+  const name    = document.getElementById('v-name').value.trim();
+  const contact = document.getElementById('v-contact').value.trim();
+  const cat     = document.getElementById('v-cat').value.trim();
+  const phone   = document.getElementById('v-phone').value.trim();
+  const email   = document.getElementById('v-email').value.trim();
+  const website = document.getElementById('v-web').value.trim().replace(/^https?:\/\//,'');
+  const notes   = document.getElementById('v-notes').value.trim();
+  if (!name) { showToast('⚠ Vendor name required'); return; }
+
+  if (editingVendorId) {
+    const v = vendors.find(x => x.id === editingVendorId);
+    Object.assign(v, { name, contact, category:cat, phone, email, website, notes });
+  } else {
+    vendors.push({ id:'v'+(++vendorIdCounter), name, contact, category:cat, phone, email, website, notes });
+  }
+  closeVendorModal();
+  renderAdminVendors();
+  // Refresh vendor datalist
+  const dl = document.getElementById('vendor-names-datalist');
+  if (dl) dl.innerHTML = vendors.map(v=>`<option value="${v.name}">`).join('');
+  showToast(editingVendorId ? '✓ Vendor updated' : '✓ Vendor added');
+}
+
+function deleteVendor() {
+  if (!editingVendorId) return;
+  vendors = vendors.filter(v => v.id !== editingVendorId);
+  closeVendorModal();
+  renderAdminVendors();
+  showToast('Vendor removed');
+}
+
+function renderAdminUsers() {
+  const list = document.getElementById('admin-users-list');
+  if (!list) return;
+  const nonPrimary = users.filter(u => u.id !== 'u1');
+  if (!nonPrimary.length) {
+    list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--label3);font-size:15px;">No members yet — tap ＋ Add User</div>';
+    return;
+  }
+  list.innerHTML = nonPrimary.map((u, i) => {
+    const initials = u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const isLast = i === nonPrimary.length - 1;
+    const sub = u.isAdmin ? 'Full admin access' : (() => {
+      const editCount = SECTIONS.filter(s => u.perms[s.id]==='edit').length;
+      const viewCount = SECTIONS.filter(s => u.perms[s.id]==='view').length;
+      return [editCount?editCount+' editable':'', viewCount?viewCount+' view-only':'', (SECTIONS.length-editCount-viewCount)?(SECTIONS.length-editCount-viewCount)+' restricted':''].filter(Boolean).join(' · ')||'no access';
+    })();
+    return `<div class="row" style="${isLast?'border-bottom:none;':''}" onclick="openEditUserModal('${u.id}')">
+      <div style="width:38px;height:38px;border-radius:50%;background:${u.isAdmin?'var(--green)':'var(--blue)'};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;margin-right:12px;flex-shrink:0;">${initials}</div>
+      <div class="row-body">
+        <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:15px;font-weight:500;">${u.name}</span>${u.isAdmin?'<span class="role-pill role-admin">Admin</span>':''}</div>
+        <div style="font-size:12px;color:var(--label3);margin-top:2px;">@${u.username} · ${sub}</div>
+      </div>
+      <div class="chev">›</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminSettings() {
+  const matCount = document.getElementById('settings-mat-count');
+  const bldCount = document.getElementById('settings-bld-count');
+  const ordCount = document.getElementById('settings-ord-count');
+  if (matCount) matCount.textContent = matLib.length;
+  if (bldCount) bldCount.textContent = buildings.length;
+  if (ordCount) ordCount.textContent = orders.length;
+}
+
+function openAdminBOMEditor(bldId) { openBuildingModal(bldId); }
+
+// ── Material Library Excel Template ──
+function downloadMatTemplate() {
+  if (typeof XLSX === 'undefined') { showToast('⚠ XLSX library not loaded yet'); return; }
+  const wb = XLSX.utils.book_new();
+  const headers = [['Description','Unit Price ($)','Category','Vendor','Notes']];
+  const sampleRows = [
+    ['2x4x96 Lumber', 3.20, 'WALLS', 'Lowe\'s Building Supply', 'Standard stud'],
+    ['OSB 7/16"', 10.80, 'ROOF', 'Lowe\'s Building Supply', 'Roof decking'],
+    ['PPG Paint (Gal)', 20.28, 'PAINT', 'PPG Paints', 'Exterior siding paint'],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleRows]);
+  ws['!cols'] = [{wch:38},{wch:14},{wch:18},{wch:26},{wch:24}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Materials');
+
+  // Categories reference sheet
+  const cats = [['Category','Description'],['FLOOR','Skids, joists, decking'],['WALLS','Studs, plates, siding'],['ROOF','Rafters, OSB, trusses'],['DOOR HARDWARE','Hinges, handles, thresholds'],['TRIM','Trim boards, nails'],['METAL','Panels, rakes, ridge cap, screws'],['PAINT','Paint, caulk, silicone'],['OTHER','Anything else']];
+  const ws2 = XLSX.utils.aoa_to_sheet(cats);
+  ws2['!cols'] = [{wch:18},{wch:38}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Categories');
+
+  XLSX.writeFile(wb, 'Material_Library_Template.xlsx');
+  showToast('📥 Material template downloaded');
+}
+
+// ── Material Library Excel Import ──
+function handleMatImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      let headerRow = -1;
+      for (let i = 0; i < Math.min(rows.length,5); i++) {
+        if (String(rows[i][0]||'').toLowerCase().includes('description')) { headerRow=i; break; }
+      }
+      if (headerRow === -1) { showToast('⚠ Cannot find headers — use template'); input.value=''; return; }
+      const dataRows = rows.slice(headerRow+1).filter(r => String(r[0]||'').trim());
+      let added=0, updated=0;
+      dataRows.forEach(row => {
+        const desc    = String(row[0]||'').trim();
+        const price   = parseFloat(row[1])||0;
+        const cat     = String(row[2]||'OTHER').trim().toUpperCase();
+        const vendor  = String(row[3]||'').trim();
+        if (!desc) return;
+        const existing = matLib.find(m => m.desc.toLowerCase()===desc.toLowerCase());
+        if (existing) {
+          existing.price=price; existing.category=cat; existing.vendor=vendor;
+          updated++;
+        } else {
+          matLib.push({id:'m'+(++matIdCounter), desc, price, category:cat, vendor});
+          inventory.push({desc, qty:0, price, category:cat});
+          added++;
+        }
+      });
+      renderAdminMaterials();
+      renderKBMaterials();
+      renderInv();
+      showToast(`✓ ${added} added, ${updated} updated`);
+    } catch(err) { showToast('⚠ Could not read file'); }
+    input.value='';
+  };
+  reader.readAsBinaryString(file);
+}
 
 // ══════════════════════════════
 // TOAST
@@ -2072,6 +2835,21 @@ let currentUser = null;
 let userIdCounter = 10;
 let editingUserId = null;
 let draftPerms = {}; // used while editing user in modal
+let draftIsAdmin = false;
+
+function setAdminToggleUI(on) {
+  draftIsAdmin = on;
+  const tog = document.getElementById('eu-admin-toggle');
+  const knob = document.getElementById('eu-admin-knob');
+  const lbl = document.getElementById('eu-admin-label');
+  const permsSec = document.getElementById('eu-perms-section');
+  if (tog) tog.style.background = on ? 'var(--green)' : 'var(--fill)';
+  if (knob) knob.style.left = on ? '22px' : '2px';
+  if (lbl) { lbl.textContent = on ? 'On' : 'Off'; lbl.style.color = on ? 'var(--green)' : 'var(--label3)'; }
+  if (permsSec) permsSec.style.display = on ? 'none' : 'block';
+}
+
+function toggleAdminDraft() { setAdminToggleUI(!draftIsAdmin); }
 
 // ── Login ──
 function doLogin() {
@@ -2124,7 +2902,16 @@ function applyPermsUI() {
     const level = currentUser.isAdmin ? 'edit' : (perms[s.id] || 'none');
     tabEl.style.display = level !== 'none' ? 'flex' : 'none';
   });
-  // Profile tab always visible
+
+  // Admin tab — only for admins
+  const adminTab = document.getElementById('tab-admin');
+  if (adminTab) adminTab.style.display = currentUser.isAdmin ? 'flex' : 'none';
+
+  // KB tab is now inside Admin — hide it from tab bar for everyone
+  const kbTab = document.getElementById('tab-kb');
+  if (kbTab) kbTab.style.display = 'none';
+
+  // Profile always visible
   const profileTab = document.getElementById('tab-profile');
   if (profileTab) profileTab.style.display = 'flex';
 }
@@ -2190,25 +2977,34 @@ function closeUsersModal() { document.getElementById('users-modal').classList.re
 
 function renderUsersList() {
   const list = document.getElementById('users-list');
-  const nonAdmins = users.filter(u => !u.isAdmin);
-  if (!nonAdmins.length) {
+  const nonPrimary = users.filter(u => u.id !== 'u1'); // show all except the master admin account
+  if (!nonPrimary.length) {
     list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--label3);font-size:15px;">No members yet — tap ＋ Add User</div>';
     return;
   }
-  list.innerHTML = nonAdmins.map((u, i) => {
+  list.innerHTML = nonPrimary.map((u, i) => {
     const initials = u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    const editCount = SECTIONS.filter(s => u.perms[s.id]==='edit').length;
-    const viewCount = SECTIONS.filter(s => u.perms[s.id]==='view').length;
-    const sub = [
-      editCount ? editCount + ' editable' : '',
-      viewCount ? viewCount + ' view-only' : '',
-      (SECTIONS.length - editCount - viewCount) ? (SECTIONS.length - editCount - viewCount) + ' restricted' : ''
-    ].filter(Boolean).join(' · ');
-    return `<div class="row" style="${i===nonAdmins.length-1?'border-bottom:none;':''}" onclick="openEditUserModal('${u.id}')">
-      <div style="width:38px;height:38px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;margin-right:12px;flex-shrink:0;">${initials}</div>
+    const isLast = i === nonPrimary.length - 1;
+    let sub;
+    if (u.isAdmin) {
+      sub = 'Full admin access';
+    } else {
+      const editCount = SECTIONS.filter(s => u.perms[s.id]==='edit').length;
+      const viewCount = SECTIONS.filter(s => u.perms[s.id]==='view').length;
+      sub = [
+        editCount ? editCount + ' editable' : '',
+        viewCount ? viewCount + ' view-only' : '',
+        (SECTIONS.length - editCount - viewCount) ? (SECTIONS.length - editCount - viewCount) + ' restricted' : ''
+      ].filter(Boolean).join(' · ') || 'no access';
+    }
+    return `<div class="row" style="${isLast?'border-bottom:none;':''}" onclick="openEditUserModal('${u.id}')">
+      <div style="width:38px;height:38px;border-radius:50%;background:${u.isAdmin?'var(--green)':'var(--blue)'};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;margin-right:12px;flex-shrink:0;">${initials}</div>
       <div class="row-body">
-        <div style="font-size:15px;font-weight:500;">${u.name}</div>
-        <div style="font-size:12px;color:var(--label3);margin-top:2px;">@${u.username} · ${sub||'no access'}</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:15px;font-weight:500;">${u.name}</span>
+          ${u.isAdmin ? '<span class="role-pill role-admin">Admin</span>' : ''}
+        </div>
+        <div style="font-size:12px;color:var(--label3);margin-top:2px;">@${u.username} · ${sub}</div>
       </div>
       <div class="chev">›</div>
     </div>`;
@@ -2227,6 +3023,7 @@ function openAddUserModal() {
   document.getElementById('eu-del-btn').style.display = 'none';
   document.getElementById('eu-save-btn').textContent = 'Add User';
   renderPermGrid();
+  setAdminToggleUI(false);
   document.getElementById('edit-user-modal').classList.add('open');
 }
 
@@ -2243,6 +3040,7 @@ function openEditUserModal(userId) {
   document.getElementById('eu-del-btn').style.display = 'flex';
   document.getElementById('eu-save-btn').textContent = 'Save Changes';
   renderPermGrid();
+  setAdminToggleUI(user.isAdmin || false);
   document.getElementById('edit-user-modal').classList.add('open');
 }
 
@@ -2258,8 +3056,8 @@ function renderPermGrid() {
   hdr.innerHTML = `
     <div style="flex:1;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);">Section</div>
     <div style="display:flex;gap:4px;flex-shrink:0;">
-      <div style="width:72px;text-align:center;font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.3px;">View</div>
-      <div style="width:72px;text-align:center;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.3px;">Edit</div>
+      <div style="width:76px;text-align:center;font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.3px;">View</div>
+      <div style="width:76px;text-align:center;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.3px;">Edit</div>
     </div>`;
   grid.appendChild(hdr);
 
@@ -2280,7 +3078,7 @@ function renderPermGrid() {
         </button>
         ${s.hasEdit ? `<button class="perm-toggle ${editOn?'on-edit':''}" onclick="togglePerm('${s.id}','edit')" id="pte-${s.id}">
           <div class="perm-toggle-dot"></div> Edit
-        </button>` : `<div style="width:72px;"></div>`}
+        </button>` : `<div style="width:76px;"></div>`}
       </div>`;
     grid.appendChild(row);
   });
@@ -2289,21 +3087,20 @@ function renderPermGrid() {
 function togglePerm(sectionId, action) {
   const current = draftPerms[sectionId] || 'none';
   if (action === 'view') {
-    draftPerms[sectionId] = current === 'none' ? 'view'
-                          : current === 'view'  ? 'none'
-                          : 'view'; // edit → view
+    // Clicking View cycles: none→view→none (if edit is on, View click drops to none)
+    draftPerms[sectionId] = (current === 'none') ? 'view' : 'none';
   } else if (action === 'edit') {
-    draftPerms[sectionId] = current === 'edit' ? 'view' : 'edit'; // toggle edit; always keeps view
+    // Clicking Edit cycles: none/view→edit, edit→view
+    draftPerms[sectionId] = (current === 'edit') ? 'view' : 'edit'; // edit always implies view
   }
-  // Re-render just this row's buttons
-  const s = SECTIONS.find(x => x.id === sectionId);
+  // Update button states
   const level = draftPerms[sectionId];
   const viewOn = level === 'view' || level === 'edit';
   const editOn = level === 'edit';
   const vBtn = document.getElementById('ptv-' + sectionId);
   const eBtn = document.getElementById('pte-' + sectionId);
-  if (vBtn) { vBtn.className = 'perm-toggle' + (viewOn?' on-view':''); }
-  if (eBtn) { eBtn.className = 'perm-toggle' + (editOn?' on-edit':''); }
+  if (vBtn) vBtn.className = 'perm-toggle' + (viewOn ? ' on-view' : '');
+  if (eBtn) eBtn.className = 'perm-toggle' + (editOn ? ' on-edit' : '');
 }
 
 function saveEditUser() {
@@ -2314,7 +3111,6 @@ function saveEditUser() {
   if (!name || !username) { showToast('⚠ Name and username required'); return; }
 
   if (editingUserId) {
-    // Editing existing
     const user = users.find(u => u.id === editingUserId);
     if (!user) return;
     const conflict = users.find(u => u.id !== editingUserId && u.username.toLowerCase() === username);
@@ -2322,17 +3118,19 @@ function saveEditUser() {
     user.name = name;
     user.username = username;
     if (password) user.password = password;
-    user.perms = { ...draftPerms };
+    user.isAdmin = draftIsAdmin;
+    user.perms = draftIsAdmin ? makeDefaultPerms('all-edit') : { ...draftPerms };
     closeEditUserModal();
     renderUsersList();
+    renderAdminUsers();
     showToast('✓ User updated');
   } else {
-    // New user
     if (!password) { showToast('⚠ Password required for new user'); return; }
     if (users.find(u => u.username.toLowerCase() === username)) { showToast('⚠ Username already exists'); return; }
-    users.push({ id:'u'+(++userIdCounter), username, password, name, isAdmin:false, perms:{ ...draftPerms } });
+    users.push({ id:'u'+(++userIdCounter), username, password, name, isAdmin:draftIsAdmin, perms: draftIsAdmin ? makeDefaultPerms('all-edit') : { ...draftPerms } });
     closeEditUserModal();
     renderUsersList();
+    renderAdminUsers();
     showToast('✓ @' + username + ' added');
   }
 }
