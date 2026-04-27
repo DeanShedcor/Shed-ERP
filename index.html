@@ -365,43 +365,92 @@
     <!-- ═══ FULFILL ═══ -->
     <div class="screen" id="sc-fulfill">
       <div class="nav">
-        <div class="nav-row"><div class="nav-title">Fulfill</div></div>
+        <div class="nav-row">
+          <div class="nav-title" id="fulfill-nav-title">Fulfill</div>
+          <button id="fulfill-back-btn" onclick="fulfillGoBack()" style="display:none;background:none;border:none;color:var(--blue);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">‹ Back</button>
+        </div>
       </div>
       <div class="scroll">
-        <div class="sec">
-          <div class="sec-hdr">Order Details</div>
-          <div class="form-card">
-            <div class="form-row">
-              <div class="form-lbl">Model</div>
-              <select class="form-sel" id="shed-sel" onchange="updateFulfill()">
-                <option value="">Select model…</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <div class="form-lbl">Quantity</div>
-              <input class="form-inp" type="number" id="ord-qty" value="1" min="1" oninput="updateFulfill()">
-            </div>
-            <div class="form-row">
-              <div class="form-lbl">Material Cost</div>
-              <div style="font-size:17px;color:var(--green);font-weight:600;" id="ord-cost">$0.00</div>
-            </div>
-            <div class="form-row" style="border-bottom:none;">
-              <div class="form-lbl">Notes</div>
-              <input class="form-inp" type="text" id="ord-notes" placeholder="Customer, order #…">
+
+        <!-- STEP 1: Style picker -->
+        <div id="fulfill-step-style">
+          <div class="sec" style="margin-top:16px;">
+            <div class="sec-hdr">Select a Style</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;">
+
+              <div onclick="selectStyle('BASIC')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;active:border-color:var(--blue);" class="style-card">
+                <div style="font-size:36px;margin-bottom:8px;">🏠</div>
+                <div style="font-size:16px;font-weight:700;color:var(--label);">Basic</div>
+                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Lofted · Utility · Studio</div>
+              </div>
+
+              <div onclick="selectStyle('CLASSIC')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;" class="style-card">
+                <div style="font-size:36px;margin-bottom:8px;">🏡</div>
+                <div style="font-size:16px;font-weight:700;color:var(--label);">Classic</div>
+                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Lofted · Utility · Studio</div>
+              </div>
+
+              <div onclick="selectStyle('ELITE')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;" class="style-card">
+                <div style="font-size:36px;margin-bottom:8px;">⭐</div>
+                <div style="font-size:16px;font-weight:700;color:var(--label);">Elite</div>
+                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Lofted · Utility · Studio</div>
+              </div>
+
+              <div onclick="selectStyle('SILVER BULLET')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;" class="style-card">
+                <div style="font-size:36px;margin-bottom:8px;">🔩</div>
+                <div style="font-size:16px;font-weight:700;color:var(--label);">Silver Bullet</div>
+                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Utility</div>
+              </div>
+
             </div>
           </div>
+
+          <div id="recent-sec" style="display:none;" class="sec">
+            <div class="sec-hdr">Recent Orders</div>
+            <div id="recent-list"></div>
+          </div>
         </div>
-        <div id="mats-sec" style="display:none;" class="sec">
-          <div class="sec-hdr">Required Materials</div>
-          <div class="card" id="mats-list"></div>
+
+        <!-- STEP 2: Model list for selected style -->
+        <div id="fulfill-step-models" style="display:none;">
+          <div class="sec" style="margin-top:12px;">
+            <div class="sec-hdr" id="fulfill-models-hdr">Choose a Model</div>
+            <div class="card" id="fulfill-models-list"></div>
+          </div>
         </div>
-        <div class="sec" style="padding-top:4px;">
-          <button class="btn btn-blue" id="fulfill-btn" disabled onclick="doFulfill()">Fulfill Order & Deduct Inventory</button>
+
+        <!-- STEP 3: Order form for selected model -->
+        <div id="fulfill-step-order" style="display:none;">
+          <div class="sec" style="margin-top:12px;">
+            <div class="sec-hdr">Order Details</div>
+            <div class="form-card">
+              <div class="form-row" style="cursor:default;">
+                <div class="form-lbl">Model</div>
+                <div style="font-size:15px;color:var(--label);text-align:right;flex:1;font-weight:600;" id="selected-model-name"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-lbl">Quantity</div>
+                <input class="form-inp" type="number" id="ord-qty" value="1" min="1" oninput="updateFulfill()">
+              </div>
+              <div class="form-row">
+                <div class="form-lbl">Material Cost</div>
+                <div style="font-size:17px;color:var(--green);font-weight:600;" id="ord-cost">$0.00</div>
+              </div>
+              <div class="form-row" style="border-bottom:none;">
+                <div class="form-lbl">Notes</div>
+                <input class="form-inp" type="text" id="ord-notes" placeholder="Customer, order #…">
+              </div>
+            </div>
+          </div>
+          <div id="mats-sec" style="display:none;" class="sec">
+            <div class="sec-hdr">Required Materials</div>
+            <div class="card" id="mats-list"></div>
+          </div>
+          <div class="sec" style="padding-top:4px;">
+            <button class="btn btn-blue" id="fulfill-btn" disabled onclick="doFulfill()">Fulfill Order & Deduct Inventory</button>
+          </div>
         </div>
-        <div id="recent-sec" style="display:none;" class="sec">
-          <div class="sec-hdr">Recent Orders</div>
-          <div id="recent-list"></div>
-        </div>
+
       </div>
     </div>
 
@@ -594,28 +643,63 @@
 
         <!-- BOM EDITOR PANEL -->
         <div id="admin-bom-panel">
-          <div class="sec" style="margin-top:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
-              <div class="sec-hdr" style="padding:0;">Building Models</div>
-              <button onclick="openBuildingModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">＋ New</button>
-            </div>
 
-            <!-- Import/Download row -->
-            <div style="display:flex;gap:8px;padding:0 16px 12px;">
-              <button onclick="downloadTemplate()" style="flex:1;border:1.5px solid var(--blue);background:none;color:var(--blue);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ Template</button>
-              <button onclick="document.getElementById('bom-xlsx-input').click()" style="flex:1;border:1.5px solid var(--green);background:none;color:var(--green);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⬆ Import Excel</button>
-              <input type="file" id="bom-xlsx-input" accept=".xlsx,.xls" style="display:none;" onchange="handleBOMImport(this)">
+          <!-- Sub-nav: style picker → model list -->
+          <div id="admin-bom-step-styles">
+            <div class="sec" style="margin-top:12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px;">
+                <div class="sec-hdr" style="padding:0;">Select Style</div>
+                <div style="display:flex;gap:8px;">
+                  <button onclick="openBuildingModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">＋ New</button>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;padding:0 16px 12px;">
+                <button onclick="downloadTemplate()" style="flex:1;border:1.5px solid var(--blue);background:none;color:var(--blue);border-radius:10px;padding:8px 6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ BOM Template</button>
+                <button onclick="document.getElementById('bom-xlsx-input').click()" style="flex:1;border:1.5px solid var(--green);background:none;color:var(--green);border-radius:10px;padding:8px 6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬆ Import Excel</button>
+                <input type="file" id="bom-xlsx-input" accept=".xlsx,.xls" style="display:none;" onchange="handleBOMImport(this)">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 4px;">
+                <div onclick="selectAdminStyle('BASIC')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
+                  <div style="font-size:30px;margin-bottom:6px;">🏠</div>
+                  <div style="font-size:15px;font-weight:700;">Basic</div>
+                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Lofted · Utility · Studio</div>
+                </div>
+                <div onclick="selectAdminStyle('CLASSIC')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
+                  <div style="font-size:30px;margin-bottom:6px;">🏡</div>
+                  <div style="font-size:15px;font-weight:700;">Classic</div>
+                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Lofted · Utility · Studio</div>
+                </div>
+                <div onclick="selectAdminStyle('ELITE')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
+                  <div style="font-size:30px;margin-bottom:6px;">⭐</div>
+                  <div style="font-size:15px;font-weight:700;">Elite</div>
+                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Lofted · Utility · Studio</div>
+                </div>
+                <div onclick="selectAdminStyle('SILVER BULLET')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
+                  <div style="font-size:30px;margin-bottom:6px;">🔩</div>
+                  <div style="font-size:15px;font-weight:700;">Silver Bullet</div>
+                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Utility</div>
+                </div>
+              </div>
             </div>
-
-            <div class="card" id="admin-buildings-list"></div>
           </div>
 
+          <!-- Model list for selected style -->
+          <div id="admin-bom-step-models" style="display:none;">
+            <div class="sec" style="margin-top:12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
+                <div class="sec-hdr" style="padding:0;" id="admin-bom-models-hdr">Models</div>
+                <button onclick="adminBOMBack()" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">‹ Styles</button>
+              </div>
+              <div class="card" id="admin-bom-models-list"></div>
+            </div>
+          </div>
+
+          <!-- Material library (always shown below) -->
           <div class="sec">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;">
               <div class="sec-hdr" style="padding:0;">Material Library</div>
               <button onclick="openMaterialModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">＋ New</button>
             </div>
-            <!-- Material template/import -->
             <div style="display:flex;gap:8px;padding:0 16px 10px;">
               <button onclick="downloadMatTemplate()" style="flex:1;border:1.5px solid var(--blue);background:none;color:var(--blue);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ Template</button>
               <button onclick="document.getElementById('mat-xlsx-input').click()" style="flex:1;border:1.5px solid var(--green);background:none;color:var(--green);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬆ Import Excel</button>
@@ -943,14 +1027,40 @@
   .order-card { background:var(--bg2); margin:0 16px 10px; border-radius:12px; overflow:hidden; }
   .order-card-hdr { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:.5px solid var(--sep); }
   .order-meta { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; font-size:13px; color:var(--label3); }
+  .style-card:active { transform:scale(.97); border-color:var(--blue) !important; }
+  .model-row { display:flex; align-items:center; padding:14px 16px; border-bottom:.5px solid var(--sep); cursor:pointer; transition:background .1s; }
+  .model-row:last-child { border-bottom:none; }
+  .model-row:active { background:var(--fill); }
 </style>
 
 <script>
 // ══════════════════════════════
 // DATA
 // ══════════════════════════════
-const CAT_COLORS = { FLOOR:'#FF950022', WALLS:'#007AFF22', ROOF:'#34C75922', 'DOOR HARDWARE':'#AF52DE22', TRIM:'#FF3B3022', METAL:'#8E8E9322', PAINT:'#FF6B0022' };
-const CAT_EMOJIS = { FLOOR:'🪵', WALLS:'🧱', ROOF:'🏠', 'DOOR HARDWARE':'🔩', TRIM:'📐', METAL:'⚙️', PAINT:'🎨' };
+
+// Title-case utility — converts "BASIC LOFTED 8X8" → "Basic Lofted 8x8"
+function toTitleCase(str) {
+  const LOWER_ALWAYS = new Set(['x','and','the','of','a','an','ft','in']);
+  return str.trim().split(/\s+/).map((word, i) => {
+    const w = word.toLowerCase();
+    // Keep measurement tokens lowercase (8x8, 10x16, etc.) except capitalise first char if start
+    if (/^\d/.test(w)) return w;
+    if (LOWER_ALWAYS.has(w) && i !== 0) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+
+// Normalise a building name: title-case + fix dimension separator
+function normBldName(name) {
+  let n = name.trim();
+  // Replace uppercase X between digits with lowercase x: 8X8 → 8x8
+  n = n.replace(/(\d)\s*X\s*(\d)/gi, (m, a, b) => a + 'x' + b);
+  return toTitleCase(n);
+}
+
+// ══════════════════════════════
+const CAT_COLORS = { FLOOR:'#FF950022', WALLS:'#007AFF22', ROOF:'#34C75922', 'DOOR HARDWARE':'#AF52DE22', TRIM:'#FF3B3022', METAL:'#8E8E9322', PAINT:'#FF6B0022', ELECTRICAL:'#FFD60022' };
+const CAT_EMOJIS = { FLOOR:'🪵', WALLS:'🧱', ROOF:'🏠', 'DOOR HARDWARE':'🔩', TRIM:'📐', METAL:'⚙️', PAINT:'🎨', ELECTRICAL:'⚡' };
 
 // Material library — master list of all known materials
 let matLib = [
@@ -1005,15 +1115,204 @@ let matLib = [
   { id: 'm48', desc: "6' Diamond Plate Threshold", price: 6.92, category: "DOOR HARDWARE" },
   { id: 'm49', desc: "SilverTech LP SmartSiding 3/8 8\" OC", price: 38.43, category: "WALLS" },
   { id: 'm50', desc: "TechShield OSB 7/16\"", price: 16.99, category: "ROOF" },
+
+  // ── PAINT / URETHANE / SUPPLIES ──
+  { id: 'm51', desc: "PPG - Urethane/gallon", price: 47.58, category: "PAINT", vendor: "PPG" },
+  { id: 'm52', desc: "Sherwin Williams Paint (Gal)", price: 23.21, category: "PAINT", vendor: "Sherwin Williams" },
+  { id: 'm53', desc: "SW - Urethane (Gal)", price: 56.00, category: "PAINT", vendor: "Sherwin Williams" },
+  { id: 'm54', desc: "Paint Rags (Box)", price: 31.99, category: "PAINT", vendor: "PPG" },
+  { id: 'm55', desc: "Painters Tape - 1 Roll", price: 3.84, category: "PAINT", vendor: "PPG" },
+  { id: 'm56', desc: "Chip Brushes", price: 0.89, category: "PAINT", vendor: "PPG" },
+  { id: 'm57', desc: "Roller Nap 4 in.", price: 2.12, category: "PAINT", vendor: "Amazon" },
+  { id: 'm58', desc: "Roller Nap 9 in.", price: 1.95, category: "PAINT", vendor: "Amazon" },
+  { id: 'm59', desc: "Spray Bonding Agent", price: 9.00, category: "PAINT", vendor: "Lowe's" },
+
+  // ── WHITEWOOD LUMBER ──
+  { id: 'm60', desc: "2x4x69\"", price: 2.75, category: "WALLS", vendor: "Union Grove Lumber" },
+  { id: 'm61', desc: "2x4x84\" (7')", price: 3.14, category: "WALLS", vendor: "Union Grove Lumber" },
+  { id: 'm62', desc: "2x6x144\" (12')", price: 6.58, category: "WALLS", vendor: "Union Grove Lumber" },
+  { id: 'm63', desc: "2x6x192 (16')", price: 7.40, category: "WALLS", vendor: "Union Grove Lumber" },
+  { id: 'm64', desc: "2x6x168\" (14')", price: 7.43, category: "WALLS", vendor: "Union Grove Lumber" },
+  { id: 'm65', desc: "2X8X144' (12')", price: 11.91, category: "WALLS", vendor: "Union Grove Lumber" },
+  { id: 'm66', desc: "2x8x192\" (16')", price: 14.82, category: "WALLS", vendor: "Union Grove Lumber" },
+
+  // ── PRESSURE TREATED (additional sizes) ──
+  { id: 'm67', desc: "2x4x117 - Pressure Treated", price: 3.33, category: "FLOOR", vendor: "C & T" },
+  { id: 'm68', desc: "2x4x130 - Pressure Treated", price: 5.25, category: "FLOOR", vendor: "C & T" },
+  { id: 'm69', desc: "2x4x192 - Pressure Treated", price: 10.48, category: "FLOOR", vendor: "C & T" },
+  { id: 'm70', desc: "2x4x96 - Pressure Treated", price: 2.67, category: "FLOOR", vendor: "C & T" },
+  { id: 'm71', desc: "2x4x144 - Pressure Treated", price: 7.20, category: "FLOOR", vendor: "C & T" },
+  { id: 'm72', desc: "2x6x130 - Pressure Treated", price: 5.50, category: "FLOOR", vendor: "C & T" },
+  { id: 'm73', desc: "2x6x165 - Pressure Treated", price: 6.20, category: "FLOOR", vendor: "C & T" },
+  { id: 'm74', desc: "4x6 Pressure Treated Posts", price: 15.17, category: "FLOOR", vendor: "C & T" },
+
+  // ── FLOORING / SIDING (additional) ──
+  { id: 'm75', desc: "4x8 - LP PREMIUM 3/4\"", price: 31.09, category: "FLOOR", vendor: "Home Depot" },
+  { id: 'm76', desc: "3/4\" Prostruct Shed Floor", price: 34.80, category: "FLOOR" },
+  { id: 'm77', desc: "LP Lap 3/8 8\"", price: 8.89, category: "WALLS", vendor: "Colonial Forest Products" },
+  { id: 'm78', desc: "4x8 - LP PERformax 3/4\" PISO", price: 36.74, category: "FLOOR", vendor: "Lumberman" },
+
+  // ── ROOF / METAL (additional panels & trim) ──
+  { id: 'm79', desc: "14.6 ft Metal Rake", price: 23.49, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm80', desc: "10.6 ft Metal Ridge Cap", price: 16.17, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm81', desc: "16.6 ft Metal Ridge Cap", price: 26.73, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm82', desc: "12.5 ft Facade Trim", price: 15.00, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm83', desc: "57\" - Metal Ag Panel (12L & 8U)", price: 13.01, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm84', desc: "71\" - Metal Ag Panel (10U)", price: 16.21, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm85', desc: "77\" - Metal Ag Panel (14L & 12U)", price: 16.49, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm86', desc: "98\" - Metal Ag Panel (14U)", price: 22.38, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm87', desc: "117\" - Metal Ag Panel", price: 25.89, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm88', desc: "140\" - Metal Ag Panel", price: 27.65, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm89', desc: "153\" - Metal Ag Panel", price: 30.22, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm90', desc: "188\" - Metal Ag Panel", price: 37.13, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm91', desc: "101\" Metal Ag Panel", price: 23.05, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm92', desc: "7/8\" Roofing Nails (Roll 120 pcs)", price: 0.82, category: "METAL", vendor: "Southern Carlson" },
+  { id: 'm93', desc: "Staples (Felt) 100pcs", price: 0.26, category: "METAL", vendor: "Southern Carlson" },
+  { id: 'm94', desc: "Side Wall Flashing 12'", price: 20.75, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm95', desc: "End Wall Flashing 12'", price: 9.59, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm96', desc: "End Wall Flashing 8'", price: 6.52, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm97', desc: "Charcoal Architectural Shingles", price: 36.50, category: "ROOF", vendor: "Beacon Building Products" },
+  { id: 'm98', desc: "Charcoal 3-Tab Shingles", price: 28.00, category: "ROOF", vendor: "Beacon Building Products" },
+  { id: 'm99', desc: "White Drip Edge", price: 2.95, category: "METAL", vendor: "MIDCO" },
+  { id: 'm100', desc: "Brown Drip Edge", price: 2.95, category: "METAL", vendor: "MIDCO" },
+  { id: 'm101', desc: "Black Drip Edge", price: 2.27, category: "METAL", vendor: "MIDCO" },
+  { id: 'm102', desc: "14 ft Metal Rake", price: 15.37, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm103', desc: "Corner Trim @ 76\"", price: 4.07, category: "METAL", vendor: "Steelcraft" },
+
+  // ── NAILS / SCREWS / FASTENERS (additional) ──
+  { id: 'm104', desc: "1.5\" x .092 HDG (Roll - 300 pcs)", price: 2.40, category: "FLOOR" },
+  { id: 'm105', desc: "1/2\" Plastic Staples (50 pcs)", price: 1.14, category: "WALLS", vendor: "Southern Carlson" },
+  { id: 'm106', desc: "6\" SDWC Hurricane Screws (1 piece)", price: 0.57, category: "ROOF", vendor: "Southern Carlson" },
+  { id: 'm107', desc: "4\" Pullboard Spax Screws (1 piece)", price: 0.38, category: "FLOOR" },
+  { id: 'm108', desc: "Decking Screws (1,750 pcs)", price: 0.07, category: "FLOOR", vendor: "Southern Carlson" },
+  { id: 'm109', desc: "Post Brackets", price: 0.90, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm110', desc: "Hurricane Ties", price: 0.98, category: "ROOF", vendor: "Lowe's" },
+
+  // ── DOORS & THRESHOLDS ──
+  { id: 'm111', desc: "Tall LH Solid In-Swing Door", price: 202.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm112', desc: "Short RH Solid In-Swing Door", price: 175.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm113', desc: "Short LH Solid In-Swing Door", price: 175.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm114', desc: "Short RH 9 Lite In-Swing Door", price: 211.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm115', desc: "Short LH 9 Lite In-Swing Door", price: 211.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm116', desc: "Tall RH 9 Lite In-Swing Door", price: 211.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm117', desc: "Short RH 6P Out-Swing Door", price: 190.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm118', desc: "9x7 Garage Door", price: 453.26, category: "DOOR HARDWARE", vendor: "Betco" },
+  { id: 'm119', desc: "8x7 Garage Door", price: 421.84, category: "DOOR HARDWARE", vendor: "Betco" },
+  { id: 'm120', desc: "6x7 Garage Door", price: 344.48, category: "DOOR HARDWARE", vendor: "Betco" },
+  { id: 'm121', desc: "6x6 Garage Door", price: 329.14, category: "DOOR HARDWARE", vendor: "Betco" },
+  { id: 'm122', desc: "6x7 Garage Threshold", price: 22.80, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm123', desc: "8x7 Garage Threshold", price: 26.75, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm124', desc: "9x7 Garage Threshold", price: 32.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm125', desc: "T-Handles (Long)", price: 3.55, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm126', desc: "Fiberglass Door Knobs", price: 10.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm127', desc: "Screen Door Spring Kit", price: 2.07, category: "DOOR HARDWARE", vendor: "Apple Outdoor Supply" },
+
+  // ── WINDOWS ──
+  { id: 'm128', desc: "10x24 White Transom", price: 19.91, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm129', desc: "10x24 Brown Transom", price: 19.91, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm130', desc: "10x29 White Transom", price: 16.99, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm131', desc: "10x29 Brown Transom", price: 17.99, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm132', desc: "10x40 White Transom", price: 35.49, category: "DOOR HARDWARE", vendor: "Apple Outdoor Supply" },
+  { id: 'm133', desc: "10x40 Brown Transom", price: 35.49, category: "DOOR HARDWARE", vendor: "Apple Outdoor Supply" },
+  { id: 'm134', desc: "2x3 Double Hung Insulated Window", price: 84.90, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm135', desc: "3x3 Double Hung Insulated Window", price: 103.14, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm136', desc: "2x3 Window White", price: 27.49, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm137', desc: "2x3 Window Brown", price: 32.35, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm138', desc: "3x3 Window White", price: 40.15, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm139', desc: "3x3 Window Brown", price: 46.80, category: "DOOR HARDWARE", vendor: "MIDCO" },
+  { id: 'm140', desc: "PREMIUM Vent", price: 1.08, category: "METAL", vendor: "Apple Outdoor Supply" },
+  { id: 'm141', desc: "SilverTech Tape (linear ft)", price: 0.12, category: "WALLS", vendor: "Home Depot" },
+
+  // ── ELECTRICAL ──
+  { id: 'm142', desc: "60W Light Bulb", price: 1.54, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm143', desc: "1000 ft. 14/2 15A Wire (linear ft)", price: 0.36, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm144', desc: "15A 1-Pole Breakers", price: 6.68, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm145', desc: "15A Duplex Outlet", price: 1.41, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm146', desc: "15A Light Switch", price: 1.10, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm147', desc: "1G 18 CU Blue Boxes (Light Switches)", price: 2.22, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm148', desc: "1G 20 CU Blue Boxes (Receptacles)", price: 2.57, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm149', desc: "1G 20 CU Blue Round Boxes (Lights)", price: 1.00, category: "ELECTRICAL", vendor: "Home Depot" },
+  { id: 'm150', desc: "30A 125/250V Grounding Plug", price: 5.36, category: "ELECTRICAL", vendor: "Lowe's" },
+  { id: 'm151', desc: "30A 125/250V Locking Connector", price: 12.58, category: "ELECTRICAL", vendor: "Home Depot" },
+  { id: 'm152', desc: "452 Red Wing Nut Wire Connector (Packs)", price: 0.22, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm153', desc: "Light Switch Wall Plate", price: 0.46, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm154', desc: "Outlet Wall Plate", price: 0.35, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm155', desc: "Circuit Breaker Load Center", price: 37.30, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm156', desc: "1/2\" Romex Connectors", price: 0.48, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm157', desc: "15A 125V Hinged Plugs", price: 6.42, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm158', desc: "Grounding Bar Kits", price: 10.48, category: "ELECTRICAL", vendor: "CED" },
+  { id: 'm159', desc: "Plastic Keyless Lamp Holder", price: 1.71, category: "ELECTRICAL", vendor: "CED" },
+
+  // ── BULLETS (Steel Buildings) ──
+  { id: 'm160', desc: "10' Panel - Back Wall", price: 25.70, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm161', desc: "12' Panel - Side Wall", price: 30.84, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm162', desc: "16' Panel - Side Wall", price: 41.12, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm163', desc: "18'5\" Panel - Front Wall", price: 47.33, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm164', desc: "20' Panel - Side Wall", price: 51.40, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm165', desc: "24\" Panel - Front Wall", price: 5.14, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm166', desc: "24' Panel - Side Wall", price: 61.68, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm167', desc: "28' Panel - Side Wall", price: 71.96, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm168', desc: "133\" Panel - Back Wall", price: 28.48, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm169', desc: "144\" Panel", price: 30.84, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm170', desc: "70\" Panel", price: 14.99, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm171', desc: "6'6\" L Corner Trim 3x3", price: 5.68, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm172', desc: "6'6\" Garage Door Post Trim", price: 5.68, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm173', desc: "6'3\" Overhead Trim", price: 7.50, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm174', desc: "8'3\" Overhead Trim", price: 8.75, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm175', desc: "8'6\" Garage Door Post Trim", price: 7.43, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm176', desc: "12'6\" Eave Trim", price: 13.25, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm177', desc: "Overhead Door Trim @ 6'3\"", price: 7.56, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm178', desc: "Post Trim @ 6'", price: 5.51, category: "METAL", vendor: "Steelcraft" },
+  { id: 'm179', desc: "Gable Trim @ 12'", price: 26.18, category: "METAL", vendor: "Steelcraft" },
+
+  // ── TRUSSES ──
+  { id: 'm180', desc: "8' - Truss Lofted", price: 16.61, category: "ROOF" },
+  { id: 'm181', desc: "8' - Truss Utility", price: 14.00, category: "ROOF" },
+  { id: 'm182', desc: "10' - Bullet Truss", price: 14.00, category: "ROOF" },
+  { id: 'm183', desc: "10' - Truss Lofted", price: 16.61, category: "ROOF" },
+  { id: 'm184', desc: "10' - Truss Utility", price: 14.00, category: "ROOF" },
+  { id: 'm185', desc: "12' - Truss Lofted", price: 21.00, category: "ROOF" },
+  { id: 'm186', desc: "12' - Truss Utility", price: 18.00, category: "ROOF" },
+  { id: 'm187', desc: "14' - Truss Lofted", price: 26.00, category: "ROOF" },
+  { id: 'm188', desc: "14' - Truss Utility", price: 22.00, category: "ROOF" },
+
+  // ── DECKING / RAILING ──
+  { id: 'm189', desc: "Decking (Sq. ft)", price: 3.68, category: "FLOOR", vendor: "Kauffman's" },
+  { id: 'm190', desc: "K-Rail (Lineal Ft)", price: 8.95, category: "FLOOR" },
+  { id: 'm191', desc: "K-Rail Bracket", price: 1.50, category: "FLOOR" },
+  { id: 'm192', desc: "K-Rail Center Support", price: 1.25, category: "FLOOR" },
+  { id: 'm193', desc: "Black Aluminum Rail (Lineal Ft)", price: 16.00, category: "FLOOR" },
+  { id: 'm194', desc: "Veranda White Railing (Lineal Ft)", price: 12.87, category: "FLOOR" },
+  { id: 'm195', desc: "Veranda White Bracket (4 pcs)", price: 11.25, category: "FLOOR" },
+  { id: 'm196', desc: "4x6 Ramp", price: 40.00, category: "FLOOR" },
+  { id: 'm197', desc: "6x6 Ramp", price: 50.40, category: "FLOOR" },
 ];
 
 // Vendor directory
 let vendors = [
-  { id:'v1', name:'Lowe\'s Building Supply', contact:'', phone:'', email:'', website:'www.lowes.com', category:'General', notes:'Primary lumber & hardware supplier' },
-  { id:'v2', name:'LP Building Products', contact:'', phone:'', email:'', website:'www.lpcorp.com', category:'Siding & Trim', notes:'LP SmartSiding, trim boards' },
-  { id:'v3', name:'PPG Paints', contact:'', phone:'', email:'', website:'www.ppg.com', category:'Paint', notes:'PPG exterior paint' },
+  { id:'v1',  name:'PPG',                    contact:'', phone:'', email:'', website:'www.ppg.com',                    category:'Paint',           notes:'PPG exterior paint, urethane, caulk' },
+  { id:'v2',  name:'Sherwin Williams',        contact:'', phone:'', email:'', website:'www.sherwin-williams.com',       category:'Paint',           notes:'SW exterior paint, urethane' },
+  { id:'v3',  name:'Union Grove Lumber',      contact:'', phone:'', email:'', website:'',                              category:'Lumber',          notes:'Primary whitewood & PT lumber supplier' },
+  { id:'v4',  name:'Woodford Plywood',        contact:'', phone:'', email:'', website:'',                              category:'Lumber',          notes:'Whitewood lumber alternative' },
+  { id:'v5',  name:'Capital Forest Products', contact:'', phone:'', email:'', website:'',                              category:'Lumber',          notes:'Whitewood & PT lumber' },
+  { id:'v6',  name:'C & T',                   contact:'', phone:'', email:'', website:'',                              category:'Pressure Treated',notes:'Primary PT lumber - skids, joists' },
+  { id:'v7',  name:'Universal Forest',        contact:'', phone:'', email:'', website:'www.ufpi.com',                  category:'Lumber',          notes:'PT lumber backup supplier' },
+  { id:'v8',  name:'Home Depot',              contact:'', phone:'', email:'', website:'www.homedepot.com',             category:'General',         notes:'OSB, LP Premium, electrical, misc' },
+  { id:'v9',  name:'Colonial Forest Products',contact:'', phone:'', email:'', website:'',                              category:'Siding',          notes:'LP SmartSiding, SilverTech, LP Trim' },
+  { id:'v10', name:'Beacon Building Products',contact:'', phone:'', email:'', website:'www.becn.com',                  category:'Roofing & Trim',  notes:'LP Trim, shingles, roofing felt' },
+  { id:'v11', name:'Steelcraft',              contact:'', phone:'', email:'', website:'',                              category:'Metal',           notes:'All metal panels, rakes, ridge cap, trim' },
+  { id:'v12', name:'On Time Metal',           contact:'', phone:'', email:'', website:'',                              category:'Metal',           notes:'Metal panel & hardware alternate' },
+  { id:'v13', name:'Southern Carlson',        contact:'', phone:'', email:'', website:'',                              category:'Fasteners',       notes:'Nails, staples, roofing & hurricane screws' },
+  { id:'v14', name:'MIDCO',                   contact:'', phone:'', email:'', website:'',                              category:'Hardware & Doors',notes:'Door hardware, thresholds, vents, windows, truss plates' },
+  { id:'v15', name:'Apple Outdoor Supply',    contact:'', phone:'', email:'', website:'',                              category:'Hardware',        notes:'Vents, windows, transoms, screen door hardware' },
+  { id:'v16', name:'Betco',                   contact:'', phone:'', email:'', website:'',                              category:'Garage Doors',    notes:'Garage doors - 6x6, 6x7, 8x7, 9x7' },
+  { id:'v17', name:'CED',                     contact:'', phone:'', email:'', website:'',                              category:'Electrical',      notes:'Electrical - wire, outlets, breakers, boxes' },
+  { id:'v18', name:'Lowe\'s',                 contact:'', phone:'', email:'', website:'www.lowes.com',                 category:'General',         notes:'General supplies, PT lumber, hurricane ties' },
+  { id:'v19', name:'Kauffman\'s',             contact:'', phone:'', email:'', website:'',                              category:'Decking',         notes:'Decking materials' },
+  { id:'v20', name:'Lumberman',               contact:'', phone:'', email:'', website:'',                              category:'Lumber',          notes:'LP PERformax flooring alternative' },
+  { id:'v21', name:'Amazon',                  contact:'', phone:'', email:'', website:'www.amazon.com',                category:'Supplies',        notes:'Roller naps, misc supplies' },
 ];
-let vendorIdCounter = 10;
+let vendorIdCounter = 30;
 let editingVendorId = null;
 let buildings = [
   {
@@ -1250,7 +1549,76 @@ let buildings = [
       { matId:'m38', qty:4.5 }, { matId:'m40', qty:0.5 }, { matId:'m39', qty:0.5 }, { matId:'m41', qty:2 },
     ]
   },
+
+  // ── IMPORTED FROM EXCEL BOM ──
+  { id:'b21', name:'BASIC UTILITY 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:8.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:17.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:2.0}, {matId:'m15', qty:5.0}, {matId:'m16', qty:24.0}, {matId:'m14', qty:14.0}, {matId:'m17', qty:28.0}, {matId:'m18', qty:12.0}, {matId:'m19', qty:6.0}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:17.0}, {matId:'m83', qty:16.0}, {matId:'m46', qty:4.0}, {matId:'m33', qty:2.5}, {matId:'m34', qty:2.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.0}, {matId:'m39', qty:1.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}] },
+  { id:'b22', name:'BASIC UTILITY 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:2.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:4.0}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:13.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:4.0}, {matId:'m13', qty:1.0}, {matId:'m15', qty:2.5}, {matId:'m16', qty:12.0}, {matId:'m17', qty:14.0}, {matId:'m18', qty:6.0}, {matId:'m19', qty:3.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:8.5}, {matId:'m83', qty:8.0}, {matId:'m46', qty:2.0}, {matId:'m33', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m36', qty:0.5}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b23', name:'BASIC STUDIO 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:8.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:22.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:14.0}, {matId:'m15', qty:5.0}, {matId:'m16', qty:27.0}, {matId:'m62', qty:19.0}, {matId:'m18', qty:12.0}, {matId:'m19', qty:7.5}, {matId:'m77', qty:6.5}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:23.0}, {matId:'m46', qty:4.0}, {matId:'m82', qty:2.5}, {matId:'m34', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.5}, {matId:'m39', qty:1.0}, {matId:'m40', qty:0.5}, {matId:'m41', qty:4.0}, {matId:'m63', qty:1.0}] },
+  { id:'b24', name:'BASIC STUDIO 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:12.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:4.0}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:9.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:3.0}, {matId:'m13', qty:7.0}, {matId:'m15', qty:2.5}, {matId:'m16', qty:13.5}, {matId:'m18', qty:6.0}, {matId:'m19', qty:4.0}, {matId:'m77', qty:4.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:11.5}, {matId:'m46', qty:2.0}, {matId:'m82', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b25', name:'CLASSIC LOFTED 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:8.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:22.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:4.0}, {matId:'m15', qty:5.0}, {matId:'m49', qty:24.0}, {matId:'m14', qty:14.0}, {matId:'m17', qty:84.0}, {matId:'m18', qty:12.0}, {matId:'m50', qty:15.0}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:16.0}, {matId:'m30', qty:36.0}, {matId:'m31', qty:4.0}, {matId:'m32', qty:2.0}, {matId:'m33', qty:2.5}, {matId:'m34', qty:2.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.0}, {matId:'m39', qty:1.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}] },
+  { id:'b26', name:'CLASSIC LOFTED 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:2.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:4.0}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:13.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:7.0}, {matId:'m13', qty:2.0}, {matId:'m15', qty:2.5}, {matId:'m49', qty:12.0}, {matId:'m17', qty:42.0}, {matId:'m18', qty:6.0}, {matId:'m50', qty:8.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:8.0}, {matId:'m30', qty:16.0}, {matId:'m31', qty:2.0}, {matId:'m32', qty:1.0}, {matId:'m33', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m36', qty:0.5}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b27', name:'CLASSIC UTILITY 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:8.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:17.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:2.0}, {matId:'m15', qty:5.0}, {matId:'m49', qty:24.0}, {matId:'m14', qty:14.0}, {matId:'m17', qty:28.0}, {matId:'m18', qty:12.0}, {matId:'m50', qty:6.0}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:17.0}, {matId:'m83', qty:16.0}, {matId:'m46', qty:4.0}, {matId:'m33', qty:2.5}, {matId:'m34', qty:2.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.0}, {matId:'m39', qty:1.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}] },
+  { id:'b28', name:'CLASSIC UTILITY 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:2.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:4.0}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:13.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:4.0}, {matId:'m13', qty:1.0}, {matId:'m15', qty:2.5}, {matId:'m49', qty:12.0}, {matId:'m17', qty:14.0}, {matId:'m18', qty:6.0}, {matId:'m50', qty:3.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:8.5}, {matId:'m83', qty:8.0}, {matId:'m46', qty:2.0}, {matId:'m33', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m36', qty:0.5}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b29', name:'CLASSIC STUDIO 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:8.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:22.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:14.0}, {matId:'m15', qty:5.0}, {matId:'m49', qty:27.0}, {matId:'m62', qty:19.0}, {matId:'m18', qty:12.0}, {matId:'m50', qty:7.5}, {matId:'m77', qty:6.5}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:23.0}, {matId:'m46', qty:4.0}, {matId:'m82', qty:2.5}, {matId:'m34', qty:2.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.5}, {matId:'m39', qty:1.0}, {matId:'m40', qty:0.5}, {matId:'m41', qty:4.0}, {matId:'m63', qty:1.0}] },
+  { id:'b30', name:'CLASSIC STUDIO 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:12.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:4.0}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:9.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:3.0}, {matId:'m13', qty:7.0}, {matId:'m15', qty:2.5}, {matId:'m49', qty:13.5}, {matId:'m18', qty:6.0}, {matId:'m50', qty:4.0}, {matId:'m77', qty:4.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:11.5}, {matId:'m46', qty:2.0}, {matId:'m82', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b31', name:'ELITE LOFTED 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:13.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:22.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:4.0}, {matId:'m15', qty:5.0}, {matId:'m50', qty:39.0}, {matId:'m77', qty:72.0}, {matId:'m14', qty:14.0}, {matId:'m17', qty:84.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:15.0}, {matId:'m30', qty:36.0}, {matId:'m31', qty:4.0}, {matId:'m32', qty:2.0}, {matId:'m33', qty:2.5}, {matId:'m34', qty:2.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.0}, {matId:'m39', qty:1.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}] },
+  { id:'b32', name:'ELITE LOFTED 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:2.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:6.5}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:13.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:7.0}, {matId:'m13', qty:2.0}, {matId:'m15', qty:2.5}, {matId:'m50', qty:20.0}, {matId:'m77', qty:36.0}, {matId:'m17', qty:42.0}, {matId:'m18', qty:6.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:7.0}, {matId:'m30', qty:16.0}, {matId:'m31', qty:2.0}, {matId:'m32', qty:1.0}, {matId:'m33', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m36', qty:0.5}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b33', name:'ELITE UTILITY 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:13.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:17.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:2.0}, {matId:'m15', qty:5.0}, {matId:'m50', qty:30.0}, {matId:'m77', qty:72.0}, {matId:'m14', qty:14.0}, {matId:'m17', qty:28.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:17.0}, {matId:'m83', qty:16.0}, {matId:'m46', qty:4.0}, {matId:'m33', qty:2.5}, {matId:'m34', qty:2.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.0}, {matId:'m39', qty:1.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}] },
+  { id:'b34', name:'ELITE UTILITY 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:2.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:6.5}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:13.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:4.0}, {matId:'m13', qty:1.0}, {matId:'m15', qty:2.5}, {matId:'m50', qty:15.0}, {matId:'m77', qty:36.0}, {matId:'m17', qty:14.0}, {matId:'m18', qty:6.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:8.5}, {matId:'m83', qty:8.0}, {matId:'m46', qty:2.0}, {matId:'m33', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m36', qty:0.5}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b35', name:'ELITE STUDIO 8X8', materialCost:0, bom:[{matId:'m1', qty:3.0}, {matId:'m3', qty:3.0}, {matId:'m4', qty:24.0}, {matId:'m6', qty:4.0}, {matId:'m7', qty:6.0}, {matId:'m8', qty:13.0}, {matId:'m9', qty:8.0}, {matId:'m10', qty:20.0}, {matId:'m11', qty:22.0}, {matId:'m12', qty:76.0}, {matId:'m13', qty:14.0}, {matId:'m15', qty:5.0}, {matId:'m50', qty:34.5}, {matId:'m77', qty:80.5}, {matId:'m62', qty:19.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:6.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m23', qty:6.0}, {matId:'m24', qty:120.0}, {matId:'m25', qty:2.0}, {matId:'m26', qty:8.0}, {matId:'m27', qty:2.0}, {matId:'m28', qty:18.0}, {matId:'m46', qty:4.0}, {matId:'m82', qty:2.5}, {matId:'m34', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:5.5}, {matId:'m39', qty:1.0}, {matId:'m40', qty:0.5}, {matId:'m41', qty:4.0}, {matId:'m63', qty:1.0}] },
+  { id:'b36', name:'ELITE STUDIO 8X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m62', qty:12.0}, {matId:'m4', qty:12.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:3.0}, {matId:'m8', qty:6.5}, {matId:'m9', qty:4.0}, {matId:'m10', qty:10.0}, {matId:'m14', qty:9.0}, {matId:'m12', qty:38.0}, {matId:'m11', qty:3.0}, {matId:'m13', qty:7.0}, {matId:'m15', qty:2.5}, {matId:'m16', qty:13.5}, {matId:'m77', qty:41.0}, {matId:'m18', qty:6.0}, {matId:'m50', qty:4.0}, {matId:'m20', qty:3.0}, {matId:'m21', qty:1.0}, {matId:'m22', qty:1.0}, {matId:'m23', qty:3.0}, {matId:'m24', qty:60.0}, {matId:'m25', qty:1.0}, {matId:'m26', qty:4.0}, {matId:'m27', qty:1.0}, {matId:'m28', qty:9.0}, {matId:'m46', qty:2.0}, {matId:'m82', qty:1.0}, {matId:'m34', qty:1.25}, {matId:'m37', qty:2.0}, {matId:'m38', qty:2.0}, {matId:'m39', qty:0.5}, {matId:'m40', qty:0.5}, {matId:'m41', qty:2.0}] },
+  { id:'b37', name:'SILVER BULLET 10X12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:7.5}, {matId:'m9', qty:10.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:22.0}, {matId:'m13', qty:16.0}, {matId:'m60', qty:52.0}, {matId:'m15', qty:5.5}, {matId:'m17', qty:36.0}, {matId:'m19', qty:12.0}, {matId:'m18', qty:16.0}, {matId:'m121', qty:2.0}, {matId:'m122', qty:2.0}, {matId:'m26', qty:16.0}, {matId:'m176', qty:6.0}, {matId:'m172', qty:4.0}, {matId:'m173', qty:2.0}, {matId:'m171', qty:8.0}, {matId:'m141', qty:64.0}, {matId:'m170', qty:22.0}, {matId:'m33', qty:3.0}, {matId:'m32', qty:4.0}, {matId:'m165', qty:8.0}, {matId:'m160', qty:8.0}, {matId:'m161', qty:4.0}, {matId:'m34', qty:5.0}, {matId:'m36', qty:0.75}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:5.0}, {matId:'m164', qty:4.0}] },
+  { id:'b38', name:'SILVER BULLET 10X16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:2.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:9.5}, {matId:'m9', qty:13.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:4.0}, {matId:'m13', qty:16.0}, {matId:'m60', qty:60.0}, {matId:'m15', qty:5.5}, {matId:'m14', qty:30.0}, {matId:'m17', qty:44.0}, {matId:'m19', qty:15.0}, {matId:'m18', qty:20.0}, {matId:'m121', qty:2.0}, {matId:'m122', qty:2.0}, {matId:'m26', qty:16.0}, {matId:'m176', qty:7.0}, {matId:'m172', qty:4.0}, {matId:'m173', qty:2.0}, {matId:'m171', qty:8.0}, {matId:'m141', qty:64.0}, {matId:'m170', qty:28.0}, {matId:'m33', qty:3.5}, {matId:'m32', qty:4.0}, {matId:'m165', qty:8.0}, {matId:'m160', qty:8.0}, {matId:'m162', qty:4.0}, {matId:'m34', qty:6.0}, {matId:'m36', qty:1.0}, {matId:'m3', qty:3.0}, {matId:'m166', qty:4.0}] },
+  { id:'b39', name:'SILVER BULLET 12X16', materialCost:0, bom:[{matId:'m1', qty:6.0}, {matId:'m3', qty:4.0}, {matId:'m72', qty:39.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:16.5}, {matId:'m8', qty:9.0}, {matId:'m9', qty:11.4}, {matId:'m10', qty:68.0}, {matId:'m11', qty:4.0}, {matId:'m14', qty:25.0}, {matId:'m60', qty:28.0}, {matId:'m15', qty:5.5}, {matId:'m17', qty:48.0}, {matId:'m19', qty:16.5}, {matId:'m18', qty:22.0}, {matId:'m121', qty:2.0}, {matId:'m122', qty:2.0}, {matId:'m26', qty:16.0}, {matId:'m176', qty:6.0}, {matId:'m172', qty:4.0}, {matId:'m173', qty:2.0}, {matId:'m171', qty:8.0}, {matId:'m141', qty:64.0}, {matId:'m170', qty:22.0}, {matId:'m33', qty:3.0}, {matId:'m32', qty:4.0}, {matId:'m165', qty:8.0}, {matId:'m160', qty:8.0}, {matId:'m161', qty:4.0}, {matId:'m34', qty:2.5}, {matId:'m36', qty:0.75}, {matId:'m42', qty:4.0}, {matId:'m44', qty:2.0}, {matId:'m4', qty:2.0}, {matId:'m13', qty:11.0}, {matId:'m61', qty:44.0}, {matId:'m62', qty:15.0}, {matId:'m164', qty:4.0}] },
+  { id:'b40', name:'SILVER BULLET 12X24', materialCost:0, bom:[{matId:'m2', qty:8.0}, {matId:'m3', qty:3.0}, {matId:'m72', qty:21.0}, {matId:'m4', qty:2.0}, {matId:'m7', qty:9.0}, {matId:'m8', qty:5.0}, {matId:'m9', qty:7.5}, {matId:'m10', qty:36.0}, {matId:'m11', qty:6.0}, {matId:'m14', qty:21.0}, {matId:'m60', qty:36.0}, {matId:'m15', qty:2.5}, {matId:'m17', qty:26.0}, {matId:'m19', qty:9.0}, {matId:'m18', qty:13.0}, {matId:'m121', qty:1.0}, {matId:'m122', qty:1.0}, {matId:'m26', qty:8.0}, {matId:'m176', qty:3.0}, {matId:'m172', qty:2.0}, {matId:'m173', qty:1.0}, {matId:'m171', qty:4.0}, {matId:'m141', qty:32.0}, {matId:'m170', qty:12.0}, {matId:'m33', qty:1.5}, {matId:'m32', qty:2.0}, {matId:'m165', qty:4.0}, {matId:'m160', qty:4.0}, {matId:'m162', qty:4.0}, {matId:'m34', qty:1.0}, {matId:'m36', qty:0.3}] },
+  { id:'b41', name:'BASIC UTILITY 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:24.0}, {matId:'m13', qty:20.0}, {matId:'m12', qty:40.0}, {matId:'m16', qty:30.0}, {matId:'m15', qty:5.0}, {matId:'m17', qty:36.0}, {matId:'m19', qty:12.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:21.0}, {matId:'m84', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:3.0}, {matId:'m34', qty:1.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:8.0}, {matId:'m61', qty:52.0}, {matId:'m30', qty:14.0}] },
+  { id:'b42', name:'BASIC UTILITY 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:2.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:15.0}, {matId:'m13', qty:20.0}, {matId:'m61', qty:104.0}, {matId:'m16', qty:34.0}, {matId:'m15', qty:5.0}, {matId:'m14', qty:22.0}, {matId:'m17', qty:44.0}, {matId:'m19', qty:15.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m84', qty:12.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}, {matId:'m30', qty:16.0}] },
+  { id:'b43', name:'BASIC STUDIO 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:9.0}, {matId:'m13', qty:28.0}, {matId:'m12', qty:40.0}, {matId:'m16', qty:35.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:24.0}, {matId:'m19', qty:12.0}, {matId:'m77', qty:12.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:21.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.0}, {matId:'m34', qty:1.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:11.5}, {matId:'m61', qty:52.0}, {matId:'m63', qty:2.5}] },
+  { id:'b44', name:'BASIC STUDIO 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:7.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:22.0}, {matId:'m13', qty:30.0}, {matId:'m61', qty:104.0}, {matId:'m16', qty:40.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:26.0}, {matId:'m19', qty:15.0}, {matId:'m77', qty:14.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}] },
+  { id:'b45', name:'CLASSIC UTILITY 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:24.0}, {matId:'m13', qty:20.0}, {matId:'m12', qty:40.0}, {matId:'m49', qty:30.0}, {matId:'m15', qty:5.0}, {matId:'m17', qty:36.0}, {matId:'m50', qty:12.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:21.0}, {matId:'m84', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:3.0}, {matId:'m34', qty:1.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:8.0}, {matId:'m61', qty:52.0}, {matId:'m30', qty:14.0}] },
+  { id:'b46', name:'CLASSIC UTILITY 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:2.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:15.0}, {matId:'m13', qty:20.0}, {matId:'m61', qty:104.0}, {matId:'m16', qty:15.0}, {matId:'m15', qty:5.0}, {matId:'m14', qty:22.0}, {matId:'m17', qty:44.0}, {matId:'m50', qty:15.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m84', qty:12.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}, {matId:'m49', qty:19.0}, {matId:'m30', qty:16.0}] },
+  { id:'b47', name:'CLASSIC STUDIO 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:9.0}, {matId:'m13', qty:28.0}, {matId:'m12', qty:40.0}, {matId:'m49', qty:35.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:24.0}, {matId:'m50', qty:12.0}, {matId:'m77', qty:12.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:21.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.0}, {matId:'m34', qty:1.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:11.5}, {matId:'m61', qty:52.0}, {matId:'m63', qty:2.5}] },
+  { id:'b48', name:'CLASSIC STUDIO 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:7.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:22.0}, {matId:'m13', qty:30.0}, {matId:'m61', qty:104.0}, {matId:'m49', qty:40.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:26.0}, {matId:'m50', qty:15.0}, {matId:'m77', qty:14.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}] },
+  { id:'b49', name:'ELITE LOFTED 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:24.0}, {matId:'m13', qty:32.0}, {matId:'m12', qty:92.0}, {matId:'m50', qty:32.0}, {matId:'m77', qty:90.0}, {matId:'m15', qty:5.0}, {matId:'m17', qty:108.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:20.0}, {matId:'m30', qty:22.0}, {matId:'m45', qty:22.0}, {matId:'m46', qty:4.0}, {matId:'m32', qty:2.0}, {matId:'m33', qty:3.0}, {matId:'m34', qty:2.75}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:8.0}, {matId:'m49', qty:17.0}] },
+  { id:'b50', name:'ELITE LOFTED 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:2.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:15.0}, {matId:'m13', qty:32.0}, {matId:'m12', qty:104.0}, {matId:'m50', qty:39.0}, {matId:'m77', qty:102.0}, {matId:'m15', qty:5.0}, {matId:'m14', qty:22.0}, {matId:'m17', qty:132.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:20.0}, {matId:'m30', qty:28.0}, {matId:'m45', qty:28.0}, {matId:'m46', qty:4.0}, {matId:'m32', qty:2.0}, {matId:'m33', qty:3.5}, {matId:'m34', qty:3.5}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}, {matId:'m49', qty:19.0}] },
+  { id:'b51', name:'ELITE UTILITY 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:24.0}, {matId:'m13', qty:20.0}, {matId:'m12', qty:40.0}, {matId:'m50', qty:42.0}, {matId:'m77', qty:104.0}, {matId:'m15', qty:5.0}, {matId:'m17', qty:36.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:21.0}, {matId:'m84', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:3.0}, {matId:'m34', qty:1.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:8.0}, {matId:'m61', qty:52.0}, {matId:'m30', qty:14.0}] },
+  { id:'b52', name:'ELITE UTILITY 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:2.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:15.0}, {matId:'m13', qty:20.0}, {matId:'m61', qty:104.0}, {matId:'m50', qty:49.0}, {matId:'m77', qty:118.0}, {matId:'m15', qty:5.0}, {matId:'m14', qty:22.0}, {matId:'m17', qty:44.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m84', qty:12.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}, {matId:'m30', qty:16.0}] },
+  { id:'b53', name:'ELITE STUDIO 10x12', materialCost:0, bom:[{matId:'m2', qty:2.0}, {matId:'m44', qty:2.0}, {matId:'m43', qty:30.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:10.0}, {matId:'m8', qty:12.5}, {matId:'m9', qty:12.5}, {matId:'m10', qty:20.0}, {matId:'m14', qty:9.0}, {matId:'m13', qty:28.0}, {matId:'m12', qty:40.0}, {matId:'m50', qty:47.0}, {matId:'m77', qty:110.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:24.0}, {matId:'m18', qty:16.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m47', qty:4.0}, {matId:'m27', qty:4.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m24', qty:120.0}, {matId:'m28', qty:21.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.0}, {matId:'m34', qty:1.5}, {matId:'m36', qty:1.0}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m42', qty:2.0}, {matId:'m3', qty:2.5}, {matId:'m11', qty:11.5}, {matId:'m61', qty:52.0}, {matId:'m63', qty:2.5}] },
+  { id:'b54', name:'ELITE STUDIO 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:7.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:22.0}, {matId:'m13', qty:30.0}, {matId:'m61', qty:104.0}, {matId:'m50', qty:55.0}, {matId:'m77', qty:132.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:26.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}] },
+  { id:'b55', name:'BASIC LOFTED 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:33.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:124.0}, {matId:'m12', qty:47.0}, {matId:'m62', qty:22.0}, {matId:'m16', qty:80.0}, {matId:'m15', qty:16.0}, {matId:'m17', qty:312.0}, {matId:'m19', qty:58.5}, {matId:'m18', qty:48.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:66.0}, {matId:'m83', qty:66.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:8.5}, {matId:'m36', qty:4.25}, {matId:'m34', qty:10.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:31.5}, {matId:'m61', qty:213.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
+  { id:'b56', name:'BASIC LOFTED 12X16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:43.75}, {matId:'m9', qty:39.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:130.0}, {matId:'m62', qty:24.0}, {matId:'m16', qty:88.0}, {matId:'m15', qty:18.0}, {matId:'m17', qty:360.0}, {matId:'m19', qty:68.0}, {matId:'m18', qty:56.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:78.0}, {matId:'m83', qty:78.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:10.0}, {matId:'m36', qty:5.25}, {matId:'m34', qty:12.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:16.0}, {matId:'m4', qty:2.0}, {matId:'m2', qty:4.0}] },
+  { id:'b57', name:'STANDARD UTILITY 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:30.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:89.0}, {matId:'m61', qty:260.0}, {matId:'m16', qty:80.0}, {matId:'m15', qty:13.0}, {matId:'m17', qty:103.0}, {matId:'m19', qty:36.0}, {matId:'m18', qty:49.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:52.5}, {matId:'m85', qty:66.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:3.25}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:27.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}, {matId:'m62', qty:15.0}] },
+  { id:'b58', name:'STANDARD UTILITY 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:100.0}, {matId:'m16', qty:88.0}, {matId:'m15', qty:13.5}, {matId:'m17', qty:120.0}, {matId:'m19', qty:44.0}, {matId:'m18', qty:58.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:54.0}, {matId:'m85', qty:78.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:4.25}, {matId:'m33', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
+  { id:'b59', name:'BASIC STUDIO 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:63.0}, {matId:'m61', qty:260.0}, {matId:'m16', qty:84.0}, {matId:'m15', qty:13.0}, {matId:'m64', qty:68.0}, {matId:'m19', qty:36.0}, {matId:'m18', qty:49.0}, {matId:'m77', qty:16.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:46.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:8.0}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:47.5}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
+  { id:'b60', name:'BASIC STUDIO 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:39.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:63.5}, {matId:'m61', qty:284.0}, {matId:'m14', qty:56.0}, {matId:'m16', qty:94.0}, {matId:'m15', qty:13.5}, {matId:'m64', qty:76.0}, {matId:'m19', qty:42.0}, {matId:'m18', qty:58.0}, {matId:'m77', qty:12.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:48.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
+  { id:'b61', name:'CLASSIC LOFTED 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:33.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:124.0}, {matId:'m12', qty:47.0}, {matId:'m62', qty:22.0}, {matId:'m49', qty:80.0}, {matId:'m15', qty:16.0}, {matId:'m17', qty:312.0}, {matId:'m50', qty:58.5}, {matId:'m18', qty:48.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:66.0}, {matId:'m83', qty:66.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:8.5}, {matId:'m36', qty:4.25}, {matId:'m34', qty:10.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:31.5}, {matId:'m61', qty:213.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
+  { id:'b62', name:'CLASSIC LOFTED 12X16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:43.75}, {matId:'m9', qty:39.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:130.0}, {matId:'m62', qty:24.0}, {matId:'m49', qty:88.0}, {matId:'m15', qty:18.0}, {matId:'m17', qty:360.0}, {matId:'m50', qty:68.0}, {matId:'m18', qty:56.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:78.0}, {matId:'m83', qty:78.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:10.0}, {matId:'m36', qty:5.25}, {matId:'m34', qty:12.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:16.0}, {matId:'m4', qty:2.0}, {matId:'m2', qty:4.0}] },
+  { id:'b63', name:'CLASSIC UTILITY 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:30.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:89.0}, {matId:'m61', qty:260.0}, {matId:'m49', qty:80.0}, {matId:'m15', qty:13.0}, {matId:'m17', qty:103.0}, {matId:'m50', qty:36.0}, {matId:'m18', qty:49.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:52.5}, {matId:'m85', qty:66.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:3.25}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:27.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}, {matId:'m62', qty:15.0}] },
+  { id:'b64', name:'CLASSIC UTILITY 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:100.0}, {matId:'m49', qty:88.0}, {matId:'m15', qty:13.5}, {matId:'m17', qty:120.0}, {matId:'m50', qty:44.0}, {matId:'m18', qty:58.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:54.0}, {matId:'m85', qty:78.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:4.25}, {matId:'m33', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
+  { id:'b65', name:'CLASSIC STUDIO 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:63.0}, {matId:'m61', qty:260.0}, {matId:'m49', qty:84.0}, {matId:'m15', qty:13.0}, {matId:'m64', qty:68.0}, {matId:'m50', qty:36.0}, {matId:'m18', qty:49.0}, {matId:'m77', qty:16.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:46.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:8.0}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:47.5}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
+  { id:'b66', name:'CLASSIC STUDIO 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:39.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:63.5}, {matId:'m61', qty:284.0}, {matId:'m14', qty:56.0}, {matId:'m49', qty:94.0}, {matId:'m15', qty:13.5}, {matId:'m64', qty:76.0}, {matId:'m50', qty:42.0}, {matId:'m18', qty:58.0}, {matId:'m77', qty:12.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:48.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
+  { id:'b67', name:'ELITE LOFTED 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:37.0}, {matId:'m9', qty:33.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:124.0}, {matId:'m12', qty:260.0}, {matId:'m62', qty:22.0}, {matId:'m50', qty:138.5}, {matId:'m77', qty:232.0}, {matId:'m15', qty:16.0}, {matId:'m17', qty:312.0}, {matId:'m18', qty:48.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:66.0}, {matId:'m83', qty:66.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:8.5}, {matId:'m36', qty:4.25}, {matId:'m34', qty:10.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:31.5}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
+  { id:'b68', name:'ELITE LOFTED 12X16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:47.75}, {matId:'m9', qty:39.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m12', qty:284.0}, {matId:'m14', qty:130.0}, {matId:'m62', qty:24.0}, {matId:'m50', qty:156.0}, {matId:'m77', qty:256.0}, {matId:'m15', qty:18.0}, {matId:'m17', qty:360.0}, {matId:'m18', qty:56.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:78.0}, {matId:'m83', qty:78.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:10.0}, {matId:'m36', qty:5.25}, {matId:'m34', qty:12.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:16.0}, {matId:'m4', qty:2.0}, {matId:'m2', qty:4.0}] },
+  { id:'b69', name:'ELITE UTILITY 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:34.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:89.0}, {matId:'m61', qty:260.0}, {matId:'m50', qty:116.0}, {matId:'m77', qty:264.0}, {matId:'m15', qty:13.0}, {matId:'m17', qty:103.0}, {matId:'m18', qty:49.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:52.5}, {matId:'m85', qty:66.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:3.25}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:27.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}, {matId:'m62', qty:15.0}] },
+  { id:'b70', name:'ELITE UTILITY 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:40.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:100.0}, {matId:'m50', qty:132.0}, {matId:'m77', qty:292.0}, {matId:'m15', qty:13.5}, {matId:'m17', qty:120.0}, {matId:'m18', qty:58.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:54.0}, {matId:'m85', qty:78.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:4.25}, {matId:'m33', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
+  { id:'b71', name:'ELITE STUDIO 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:37.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:63.0}, {matId:'m61', qty:260.0}, {matId:'m50', qty:120.0}, {matId:'m77', qty:276.0}, {matId:'m15', qty:13.0}, {matId:'m64', qty:68.0}, {matId:'m18', qty:49.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:46.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:8.0}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:47.5}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
+  { id:'b72', name:'ELITE STUDIO 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:43.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:63.5}, {matId:'m61', qty:284.0}, {matId:'m14', qty:56.0}, {matId:'m49', qty:17.5}, {matId:'m77', qty:300.0}, {matId:'m15', qty:13.5}, {matId:'m64', qty:76.0}, {matId:'m50', qty:118.5}, {matId:'m18', qty:58.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:48.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
+  { id:'b73', name:'BASIC LOFTED 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.5}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.5}, {matId:'m12', qty:225.0}, {matId:'m64', qty:18.0}, {matId:'m16', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m19', qty:61.5}, {matId:'m17', qty:270.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:58.0}, {matId:'m85', qty:14.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}, {matId:'m45', qty:44.0}] },
+  { id:'b74', name:'BASIC LOFTED 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m12', qty:243.0}, {matId:'m64', qty:14.0}, {matId:'m16', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m63', qty:4.0}, {matId:'m19', qty:68.0}, {matId:'m17', qty:306.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:66.0}, {matId:'m45', qty:66.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
+  { id:'b75', name:'BASIC UTILITY 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.0}, {matId:'m61', qty:225.0}, {matId:'m16', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m19', qty:42.0}, {matId:'m17', qty:90.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m86', qty:58.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
+  { id:'b76', name:'BASIC UTILITY 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m61', qty:243.0}, {matId:'m16', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m19', qty:54.0}, {matId:'m17', qty:102.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m86', qty:66.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
+  { id:'b77', name:'STANDARD STUDIO 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:78.0}, {matId:'m61', qty:225.0}, {matId:'m16', qty:81.0}, {matId:'m15', qty:9.0}, {matId:'m63', qty:61.5}, {matId:'m19', qty:42.0}, {matId:'m77', qty:18.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m31', qty:12.0}, {matId:'m82', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
+  { id:'b78', name:'STANDARD STUDIO 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:87.0}, {matId:'m61', qty:243.0}, {matId:'m16', qty:88.5}, {matId:'m15', qty:9.0}, {matId:'m63', qty:69.0}, {matId:'m19', qty:48.0}, {matId:'m77', qty:19.5}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m31', qty:12.0}, {matId:'m82', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}, {matId:'m86', qty:14.0}] },
+  { id:'b79', name:'CLASSIC LOFTED 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.5}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.5}, {matId:'m12', qty:225.0}, {matId:'m64', qty:18.0}, {matId:'m49', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m50', qty:61.5}, {matId:'m17', qty:270.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:58.0}, {matId:'m85', qty:14.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}, {matId:'m45', qty:44.0}] },
+  { id:'b80', name:'CLASSIC LOFTED 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m12', qty:243.0}, {matId:'m64', qty:14.0}, {matId:'m49', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m63', qty:4.0}, {matId:'m50', qty:68.0}, {matId:'m17', qty:306.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:66.0}, {matId:'m45', qty:66.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
+  { id:'b81', name:'CLASSIC UTILITY 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.0}, {matId:'m61', qty:225.0}, {matId:'m49', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m50', qty:42.0}, {matId:'m17', qty:90.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m86', qty:58.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
+  { id:'b82', name:'CLASSIC UTILITY 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m61', qty:243.0}, {matId:'m49', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m50', qty:48.0}, {matId:'m17', qty:102.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m86', qty:66.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
+  { id:'b83', name:'STANDARD STUDIO 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:78.0}, {matId:'m61', qty:225.0}, {matId:'m49', qty:81.0}, {matId:'m15', qty:9.0}, {matId:'m63', qty:61.5}, {matId:'m50', qty:42.0}, {matId:'m77', qty:18.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m31', qty:12.0}, {matId:'m82', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
+  { id:'b84', name:'STANDARD STUDIO 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:87.0}, {matId:'m61', qty:243.0}, {matId:'m49', qty:88.5}, {matId:'m15', qty:9.0}, {matId:'m63', qty:69.0}, {matId:'m50', qty:48.0}, {matId:'m77', qty:19.5}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m31', qty:12.0}, {matId:'m82', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}, {matId:'m86', qty:14.0}] },
 ];
+
+// Normalise all building names to Title Case
+buildings.forEach(b => { b.name = normBldName(b.name); });
 
 // Inventory (live stock)
 let inventory = (() => {
@@ -1274,8 +1642,8 @@ let kbSeg = 'buildings';
 let editingBldId = null;
 let editingMatId = null;
 let bomLines = []; // temp BOM while editing
-let matIdCounter = 100;
-let bldIdCounter = 20;
+let matIdCounter = 200;
+let bldIdCounter = 100;
 let recvIdCounter = 0;
 
 // ══════════════════════════════
@@ -1292,7 +1660,7 @@ function goTab(id) {
   const tabEl = document.getElementById('tab-' + id);
   if (tabEl) tabEl.classList.add('active');
   if (id === 'inv') renderInv();
-  if (id === 'fulfill') { populateShedSelect(); updateFulfill(); renderRecent(); }
+  if (id === 'fulfill') { fulfillGoToStep('style'); renderRecent(); }
   if (id === 'kb') { renderKBBuildings(); renderKBMaterials(); }
   if (id === 'admin') renderAdminTab();
   if (id === 'rpt') renderRpt();
@@ -1482,21 +1850,115 @@ function doReceive() {
 // ══════════════════════════════
 // FULFILL
 // ══════════════════════════════
-function populateShedSelect() {
-  const sel = document.getElementById('shed-sel');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Select model…</option>';
-  buildings.forEach(b => {
-    const opt = document.createElement('option');
-    opt.value = b.id;
-    opt.textContent = b.name + ' ($' + b.materialCost.toFixed(2) + ')';
-    if (b.id === cur) opt.selected = true;
-    sel.appendChild(opt);
+// ══════════════════════════════
+// FULFILL — 3-STEP FLOW
+// ══════════════════════════════
+let fulfillStep = 'style'; // 'style' | 'models' | 'order'
+let fulfillSelectedStyle = null;
+let fulfillSelectedBldId = null;
+
+const STYLE_CONFIG = {
+  'BASIC':        { icon:'🏠', color:'#007AFF', label:'Basic' },
+  'CLASSIC':      { icon:'🏡', color:'#34C759', label:'Classic' },
+  'ELITE':        { icon:'⭐', color:'#AF52DE', label:'Elite' },
+  'SILVER BULLET':{ icon:'🔩', color:'#FF9500', label:'Silver Bullet' },
+  'STANDARD':     { icon:'🏠', color:'#8E8E93', label:'Standard' },
+};
+
+function fulfillGoToStep(step) {
+  fulfillStep = step;
+  document.getElementById('fulfill-step-style').style.display  = step==='style'  ? 'block' : 'none';
+  document.getElementById('fulfill-step-models').style.display = step==='models' ? 'block' : 'none';
+  document.getElementById('fulfill-step-order').style.display  = step==='order'  ? 'block' : 'none';
+  document.getElementById('fulfill-back-btn').style.display = step==='style' ? 'none' : 'block';
+
+  const titles = { style:'Fulfill', models: (fulfillSelectedStyle||''), order:'Order Details' };
+  document.getElementById('fulfill-nav-title').textContent = titles[step] || 'Fulfill';
+}
+
+function fulfillGoBack() {
+  if (fulfillStep === 'order') fulfillGoToStep('models');
+  else if (fulfillStep === 'models') fulfillGoToStep('style');
+}
+
+function selectStyle(style) {
+  fulfillSelectedStyle = style;
+
+  // Filter buildings matching this style
+  const cfg = STYLE_CONFIG[style] || STYLE_CONFIG['BASIC'];
+  const matches = buildings.filter(b => {
+    const up = b.name.toUpperCase();
+    if (style === 'SILVER BULLET') return up.includes('SILVER BULLET') || up.includes('BULLET');
+    if (style === 'BASIC') return up.includes('BASIC') && !up.includes('CLASSIC') && !up.includes('ELITE');
+    if (style === 'CLASSIC') return up.includes('CLASSIC');
+    if (style === 'ELITE') return up.includes('ELITE');
+    return false;
   });
+
+  // Group by sub-type (LOFTED, UTILITY, STUDIO, STANDARD)
+  const groups = {};
+  matches.forEach(b => {
+    const up = b.name.toUpperCase();
+    let subtype = 'OTHER';
+    if (up.includes('LOFTED')) subtype = 'Lofted';
+    else if (up.includes('UTILITY')) subtype = 'Utility';
+    else if (up.includes('STUDIO')) subtype = 'Studio';
+    else if (up.includes('STANDARD')) subtype = 'Standard';
+    if (!groups[subtype]) groups[subtype] = [];
+    groups[subtype].push(b);
+  });
+
+  const listEl = document.getElementById('fulfill-models-list');
+  listEl.innerHTML = '';
+
+  const subtypeOrder = ['Lofted','Utility','Studio','Standard','OTHER'];
+  subtypeOrder.forEach(subtype => {
+    if (!groups[subtype]) return;
+    // Subtype header
+    const hdr = document.createElement('div');
+    hdr.style.cssText = `padding:10px 16px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);`;
+    hdr.textContent = subtype;
+    listEl.appendChild(hdr);
+
+    groups[subtype].forEach((b, i) => {
+      const isLast = i === groups[subtype].length - 1 && !subtypeOrder.slice(subtypeOrder.indexOf(subtype)+1).some(s => groups[s]);
+      const matCount = b.bom.length;
+      const costStr = b.materialCost > 0 ? '$' + b.materialCost.toFixed(2) : 'Cost TBD';
+
+      const row = document.createElement('div');
+      row.className = 'model-row';
+      row.innerHTML = `
+        <div style="width:40px;height:40px;border-radius:10px;background:${cfg.color}22;display:flex;align-items:center;justify-content:center;font-size:20px;margin-right:12px;flex-shrink:0;">${cfg.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name}</div>
+          <div style="font-size:12px;color:var(--label3);margin-top:2px;">${matCount} materials · <span style="color:var(--green);font-weight:600;">${costStr}</span></div>
+        </div>
+        <div style="font-size:20px;color:var(--label3);margin-left:8px;">›</div>`;
+      row.onclick = () => selectModel(b.id);
+      listEl.appendChild(row);
+    });
+  });
+
+  document.getElementById('fulfill-models-hdr').textContent = cfg.label + ' Models';
+  fulfillGoToStep('models');
+}
+
+function selectModel(bldId) {
+  fulfillSelectedBldId = bldId;
+  const bld = buildings.find(b => b.id === bldId);
+  document.getElementById('selected-model-name').textContent = bld.name;
+  document.getElementById('ord-qty').value = 1;
+  document.getElementById('ord-notes').value = '';
+  fulfillGoToStep('order');
+  updateFulfill();
+}
+
+function populateShedSelect() {
+  // No-op — kept for compatibility with goTab calls
 }
 
 function updateFulfill() {
-  const bldId = document.getElementById('shed-sel').value;
+  const bldId = fulfillSelectedBldId;
   const qty = parseInt(document.getElementById('ord-qty').value)||1;
   const costEl = document.getElementById('ord-cost');
   const btn = document.getElementById('fulfill-btn');
@@ -1525,7 +1987,7 @@ function updateFulfill() {
 }
 
 function doFulfill() {
-  const bldId = document.getElementById('shed-sel').value;
+  const bldId = fulfillSelectedBldId;
   const qty = parseInt(document.getElementById('ord-qty').value)||1;
   const notes = document.getElementById('ord-notes').value;
   const bld = buildings.find(b => b.id === bldId);
@@ -1553,10 +2015,11 @@ function doFulfill() {
 
   orders.unshift({ id:Date.now(), bldName:bld.name, qty, timestamp:new Date().toISOString(), cost:bld.materialCost*qty, deds, notes, user: currentUser?currentUser.name:'System', username: currentUser?currentUser.username:'system' });
   addAudit('FULFILL', 'ORDER', `Fulfilled ${qty}× ${bld.name}${notes?' ('+notes+')':''}`, { qty, cost: bld.materialCost*qty });
-  document.getElementById('shed-sel').value='';
-  document.getElementById('ord-qty').value=1;
-  document.getElementById('ord-notes').value='';
-  updateFulfill();
+
+  document.getElementById('ord-qty').value = 1;
+  document.getElementById('ord-notes').value = '';
+  fulfillSelectedBldId = null;
+  fulfillGoToStep('style');
   renderRecent();
   showToast('✓ Order fulfilled — ' + qty + '× ' + bld.name);
 }
@@ -1629,7 +2092,7 @@ function renderKBMaterials() {
   Object.entries(byCat).forEach(([cat, mats]) => {
     const hdr = document.createElement('div');
     hdr.style.cssText = 'padding:10px 16px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);';
-    hdr.textContent = cat;
+    hdr.textContent = toTitleCase(cat);
     list.appendChild(hdr);
     mats.forEach(m => {
       const row = document.createElement('div');
@@ -1713,7 +2176,7 @@ function updateBOMQty(idx, val) { bomLines[idx].qty = parseFloat(val)||0; }
 function removeBOMLine(idx) { bomLines.splice(idx,1); renderBOMLines(); }
 
 function saveBuildingModal() {
-  const name = document.getElementById('bld-name').value.trim();
+  const name = normBldName(document.getElementById('bld-name').value.trim());
   const cost = parseFloat(document.getElementById('bld-cost').value)||0;
   if (!name) { showToast('Please enter a building name'); return; }
 
@@ -2155,30 +2618,73 @@ function renderAdminTab() {
 }
 
 function renderAdminBuildings() {
-  const list = document.getElementById('admin-buildings-list');
-  if (!list) return;
-  list.innerHTML = '';
-  if (!buildings.length) {
-    list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--label3);font-size:15px;">No buildings yet</div>';
-    return;
-  }
-  buildings.forEach((b, i) => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    if (i === buildings.length - 1) row.style.borderBottom = 'none';
-    row.innerHTML = `
-      <div class="row-icon ic-blue" style="font-size:18px;">🏠</div>
-      <div class="row-body">
-        <div class="row-title">${b.name}</div>
-        <div class="row-sub">${b.bom.length} materials · $${b.materialCost.toFixed(2)} cost</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="openAdminBOMEditor('${b.id}')" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Edit BOM</button>
-        <div class="chev">›</div>
-      </div>`;
-    row.onclick = (e) => { if (!e.target.closest('button')) openBuildingModal(b.id); };
-    list.appendChild(row);
+  // Show the style picker step by default
+  const stylesStep = document.getElementById('admin-bom-step-styles');
+  const modelsStep = document.getElementById('admin-bom-step-models');
+  if (stylesStep) stylesStep.style.display = 'block';
+  if (modelsStep) modelsStep.style.display = 'none';
+}
+
+function selectAdminStyle(style) {
+  const cfg = STYLE_CONFIG[style] || STYLE_CONFIG['BASIC'];
+  const matches = buildings.filter(b => {
+    const up = b.name.toUpperCase();
+    if (style === 'SILVER BULLET') return up.includes('SILVER') || up.includes('BULLET');
+    if (style === 'BASIC') return up.includes('BASIC') && !up.includes('CLASSIC') && !up.includes('ELITE');
+    if (style === 'CLASSIC') return up.includes('CLASSIC');
+    if (style === 'ELITE') return up.includes('ELITE');
+    return false;
   });
+
+  const groups = {};
+  matches.forEach(b => {
+    const up = b.name.toUpperCase();
+    let sub = 'Other';
+    if (up.includes('LOFTED')) sub = 'Lofted';
+    else if (up.includes('UTILITY')) sub = 'Utility';
+    else if (up.includes('STUDIO')) sub = 'Studio';
+    else if (up.includes('STANDARD')) sub = 'Standard';
+    if (!groups[sub]) groups[sub] = [];
+    groups[sub].push(b);
+  });
+
+  const listEl = document.getElementById('admin-bom-models-list');
+  listEl.innerHTML = '';
+  const subtypeOrder = ['Lofted','Utility','Studio','Standard','Other'];
+
+  subtypeOrder.forEach(sub => {
+    if (!groups[sub]) return;
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:10px 16px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);';
+    hdr.textContent = sub;
+    listEl.appendChild(hdr);
+
+    groups[sub].forEach((b, i) => {
+      const costStr = b.materialCost > 0 ? '$' + b.materialCost.toFixed(2) : 'Cost TBD';
+      const row = document.createElement('div');
+      row.className = 'model-row';
+      row.innerHTML = `
+        <div style="width:38px;height:38px;border-radius:10px;background:${cfg.color}22;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;flex-shrink:0;">${cfg.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name}</div>
+          <div style="font-size:12px;color:var(--label3);margin-top:2px;">${b.bom.length} materials · <span style="color:var(--green);font-weight:600;">${costStr}</span></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <button onclick="event.stopPropagation();openAdminBOMEditor('${b.id}')" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">Edit BOM</button>
+        </div>`;
+      row.onclick = (e) => { if (!e.target.closest('button')) openBuildingModal(b.id); };
+      listEl.appendChild(row);
+    });
+  });
+
+  document.getElementById('admin-bom-models-hdr').textContent = cfg.label + ' Models';
+  document.getElementById('admin-bom-step-styles').style.display = 'none';
+  document.getElementById('admin-bom-step-models').style.display = 'block';
+}
+
+function adminBOMBack() {
+  document.getElementById('admin-bom-step-styles').style.display = 'block';
+  document.getElementById('admin-bom-step-models').style.display = 'none';
 }
 
 function renderAdminMaterials() {
@@ -2195,7 +2701,7 @@ function renderAdminMaterials() {
   Object.entries(byCat).forEach(([cat, mats]) => {
     const hdr = document.createElement('div');
     hdr.style.cssText = 'padding:10px 16px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);';
-    hdr.textContent = cat;
+    hdr.textContent = toTitleCase(cat);
     list.appendChild(hdr);
     mats.forEach(m => {
       const emoji = CAT_EMOJIS[cat]||'📦';
@@ -2760,7 +3266,7 @@ function showImportPreview(rows, filename) {
 }
 
 function confirmImport() {
-  const bldName = document.getElementById('import-bld-name').value.trim();
+  const bldName = normBldName(document.getElementById('import-bld-name').value.trim());
   const bldCost = parseFloat(document.getElementById('import-bld-cost').value)||0;
   if (!bldName) { showToast('Please enter a building name'); return; }
 
