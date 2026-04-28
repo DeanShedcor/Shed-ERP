@@ -376,33 +376,7 @@
         <div id="fulfill-step-style">
           <div class="sec" style="margin-top:16px;">
             <div class="sec-hdr">Select a Style</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;">
-
-              <div onclick="selectStyle('BASIC')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;active:border-color:var(--blue);" class="style-card">
-                <div style="font-size:36px;margin-bottom:8px;">🏠</div>
-                <div style="font-size:16px;font-weight:700;color:var(--label);">Basic</div>
-                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Lofted · Utility · Studio</div>
-              </div>
-
-              <div onclick="selectStyle('CLASSIC')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;" class="style-card">
-                <div style="font-size:36px;margin-bottom:8px;">🏡</div>
-                <div style="font-size:16px;font-weight:700;color:var(--label);">Classic</div>
-                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Lofted · Utility · Studio</div>
-              </div>
-
-              <div onclick="selectStyle('ELITE')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;" class="style-card">
-                <div style="font-size:36px;margin-bottom:8px;">⭐</div>
-                <div style="font-size:16px;font-weight:700;color:var(--label);">Elite</div>
-                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Lofted · Utility · Studio</div>
-              </div>
-
-              <div onclick="selectStyle('SILVER BULLET')" style="background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all .15s;" class="style-card">
-                <div style="font-size:36px;margin-bottom:8px;">🔩</div>
-                <div style="font-size:16px;font-weight:700;color:var(--label);">Silver Bullet</div>
-                <div style="font-size:11px;color:var(--label3);margin-top:4px;">Utility</div>
-              </div>
-
-            </div>
+            <div id="fulfill-style-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;"></div>
           </div>
 
           <div id="recent-sec" style="display:none;" class="sec">
@@ -649,8 +623,12 @@
             <div class="sec" style="margin-top:12px;">
               <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px;">
                 <div class="sec-hdr" style="padding:0;">Select Style</div>
-                <div style="display:flex;gap:8px;">
-                  <button onclick="openBuildingModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">＋ New</button>
+                <div class="add-menu" id="bom-add-menu">
+                  <button onclick="toggleAddMenu()" style="background:var(--blue);color:#fff;border:none;border-radius:16px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;">＋ New <span style="font-size:10px;opacity:.8;">▾</span></button>
+                  <div class="add-menu-dropdown" id="bom-add-dropdown">
+                    <button class="add-menu-item" onclick="closeAddMenu();openBuildingModal(null)"><span>🏠</span> New Building</button>
+                    <button class="add-menu-item" onclick="closeAddMenu();openStyleModal(null)"><span>🎨</span> New Style</button>
+                  </div>
                 </div>
               </div>
               <div style="display:flex;gap:8px;padding:0 16px 12px;">
@@ -658,28 +636,7 @@
                 <button onclick="document.getElementById('bom-xlsx-input').click()" style="flex:1;border:1.5px solid var(--green);background:none;color:var(--green);border-radius:10px;padding:8px 6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">⬆ Import Excel</button>
                 <input type="file" id="bom-xlsx-input" accept=".xlsx,.xls" style="display:none;" onchange="handleBOMImport(this)">
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 4px;">
-                <div onclick="selectAdminStyle('BASIC')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
-                  <div style="font-size:30px;margin-bottom:6px;">🏠</div>
-                  <div style="font-size:15px;font-weight:700;">Basic</div>
-                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Lofted · Utility · Studio</div>
-                </div>
-                <div onclick="selectAdminStyle('CLASSIC')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
-                  <div style="font-size:30px;margin-bottom:6px;">🏡</div>
-                  <div style="font-size:15px;font-weight:700;">Classic</div>
-                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Lofted · Utility · Studio</div>
-                </div>
-                <div onclick="selectAdminStyle('ELITE')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
-                  <div style="font-size:30px;margin-bottom:6px;">⭐</div>
-                  <div style="font-size:15px;font-weight:700;">Elite</div>
-                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Lofted · Utility · Studio</div>
-                </div>
-                <div onclick="selectAdminStyle('SILVER BULLET')" class="style-card" style="background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;">
-                  <div style="font-size:30px;margin-bottom:6px;">🔩</div>
-                  <div style="font-size:15px;font-weight:700;">Silver Bullet</div>
-                  <div style="font-size:11px;color:var(--label3);margin-top:3px;">Utility</div>
-                </div>
-              </div>
+              <div id="admin-style-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 4px;"></div>
             </div>
           </div>
 
@@ -1019,6 +976,72 @@
   </div>
 </div>
 
+<!-- Style Modal -->
+<div class="modal-overlay" id="style-modal" style="z-index:200;">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="style-modal-title">New Style</div>
+      <button class="modal-close" onclick="closeStyleModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sec">
+        <div class="sec-hdr">Style Details</div>
+        <div class="form-card">
+          <div class="form-row">
+            <div class="form-lbl">Style Name</div>
+            <input class="form-inp" id="st-label" placeholder="e.g. Premier" oninput="updateStylePreview()">
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Sub-types</div>
+            <input class="form-inp" id="st-subtypes" placeholder="e.g. Lofted · Utility">
+          </div>
+          <div class="form-row" style="border-bottom:none;">
+            <div class="form-lbl">Icon</div>
+            <input class="form-inp" id="st-icon" placeholder="🏠" maxlength="2" oninput="updateStylePreview()" style="text-align:right;font-size:22px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Color picker -->
+      <div class="sec">
+        <div class="sec-hdr">Color</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:0 16px;">
+          <div class="color-swatch" data-color="#007AFF" onclick="pickColor(this)" style="background:#007AFF;"></div>
+          <div class="color-swatch" data-color="#34C759" onclick="pickColor(this)" style="background:#34C759;"></div>
+          <div class="color-swatch" data-color="#AF52DE" onclick="pickColor(this)" style="background:#AF52DE;"></div>
+          <div class="color-swatch" data-color="#FF9500" onclick="pickColor(this)" style="background:#FF9500;"></div>
+          <div class="color-swatch" data-color="#FF3B30" onclick="pickColor(this)" style="background:#FF3B30;"></div>
+          <div class="color-swatch" data-color="#00C7BE" onclick="pickColor(this)" style="background:#00C7BE;"></div>
+          <div class="color-swatch" data-color="#FF6B00" onclick="pickColor(this)" style="background:#FF6B00;"></div>
+          <div class="color-swatch" data-color="#8E8E93" onclick="pickColor(this)" style="background:#8E8E93;"></div>
+          <div class="color-swatch" data-color="#1C1C1E" onclick="pickColor(this)" style="background:#1C1C1E;"></div>
+          <div class="color-swatch" data-color="#BF5AF2" onclick="pickColor(this)" style="background:#BF5AF2;"></div>
+          <div class="color-swatch" data-color="#30D158" onclick="pickColor(this)" style="background:#30D158;"></div>
+          <div class="color-swatch" data-color="#FFD60A" onclick="pickColor(this)" style="background:#FFD60A;"></div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="sec">
+        <div class="sec-hdr">Preview</div>
+        <div style="padding:0 16px;">
+          <div id="style-preview-card" style="background:var(--bg2);border-radius:14px;padding:20px 14px;text-align:center;border:2px solid transparent;">
+            <div id="style-preview-icon" style="font-size:32px;margin-bottom:8px;">🏠</div>
+            <div id="style-preview-label" style="font-size:16px;font-weight:700;">Style Name</div>
+            <div id="style-preview-subtypes" style="font-size:11px;color:var(--label3);margin-top:4px;">Sub-types</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:0 16px 8px;">
+        <button class="btn btn-blue" style="width:auto;flex:1;margin:0;" onclick="saveStyleModal()">Save Style</button>
+        <button class="btn btn-red" style="width:auto;padding:16px 18px;margin:0;display:none;" id="st-del-btn" onclick="deleteStyle()">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" aria-live="polite"></div>
 
 <style>
@@ -1031,6 +1054,17 @@
   .model-row { display:flex; align-items:center; padding:14px 16px; border-bottom:.5px solid var(--sep); cursor:pointer; transition:background .1s; }
   .model-row:last-child { border-bottom:none; }
   .model-row:active { background:var(--fill); }
+  .color-swatch { width:100%; aspect-ratio:1; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:transform .15s,border-color .15s; }
+  .color-swatch:active { transform:scale(.9); }
+  .color-swatch.selected { border-color:var(--label); transform:scale(1.1); }
+
+  /* Add button dropdown */
+  .add-menu { position:relative; display:inline-block; }
+  .add-menu-dropdown { position:absolute; right:0; top:calc(100% + 6px); background:var(--bg2); border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,.18); z-index:50; min-width:170px; overflow:hidden; display:none; border:.5px solid var(--sep); }
+  .add-menu-dropdown.open { display:block; }
+  .add-menu-item { display:flex; align-items:center; gap:10px; padding:13px 16px; font-size:15px; cursor:pointer; border-bottom:.5px solid var(--sep); color:var(--label); font-family:inherit; background:none; border-left:none; border-right:none; border-top:none; width:100%; text-align:left; }
+  .add-menu-item:last-child { border-bottom:none; }
+  .add-menu-item:active { background:var(--fill); }
 </style>
 
 <script>
@@ -1662,7 +1696,7 @@ function goTab(id) {
   if (id === 'inv') renderInv();
   if (id === 'fulfill') { fulfillGoToStep('style'); renderRecent(); }
   if (id === 'kb') { renderKBBuildings(); renderKBMaterials(); }
-  if (id === 'admin') renderAdminTab();
+  if (id === 'admin') { renderAdminTab(); }
   if (id === 'rpt') renderRpt();
   if (id === 'profile') renderProfileScreen();
 }
@@ -1857,13 +1891,24 @@ let fulfillStep = 'style'; // 'style' | 'models' | 'order'
 let fulfillSelectedStyle = null;
 let fulfillSelectedBldId = null;
 
-const STYLE_CONFIG = {
-  'BASIC':        { icon:'🏠', color:'#007AFF', label:'Basic' },
-  'CLASSIC':      { icon:'🏡', color:'#34C759', label:'Classic' },
-  'ELITE':        { icon:'⭐', color:'#AF52DE', label:'Elite' },
-  'SILVER BULLET':{ icon:'🔩', color:'#FF9500', label:'Silver Bullet' },
-  'STANDARD':     { icon:'🏠', color:'#8E8E93', label:'Standard' },
-};
+// Building styles — mutable so admin can add/edit/delete
+let buildingStyles = [
+  { key:'BASIC',        icon:'🏠', color:'#007AFF', label:'Basic',        subtypes:'Lofted · Utility · Studio' },
+  { key:'CLASSIC',      icon:'🏡', color:'#34C759', label:'Classic',       subtypes:'Lofted · Utility · Studio' },
+  { key:'ELITE',        icon:'⭐', color:'#AF52DE', label:'Elite',         subtypes:'Lofted · Utility · Studio' },
+  { key:'SILVER BULLET',icon:'🔩', color:'#FF9500', label:'Silver Bullet', subtypes:'Utility' },
+  { key:'STANDARD',     icon:'🏠', color:'#8E8E93', label:'Standard',      subtypes:'Utility · Studio' },
+];
+let styleIdCounter = 10;
+let editingStyleKey = null;
+
+// Keep STYLE_CONFIG as a computed getter for backward compat
+const STYLE_CONFIG = new Proxy({}, {
+  get(_, key) {
+    const s = buildingStyles.find(x => x.key === key);
+    return s || { icon:'🏠', color:'#8E8E93', label: key };
+  }
+});
 
 function fulfillGoToStep(step) {
   fulfillStep = step;
@@ -2615,6 +2660,7 @@ function renderAdminTab() {
   document.getElementById('admin-settings-panel').style.display = 'none';
   renderAdminBuildings();
   renderAdminMaterials();
+  refreshStyleGrids();
 }
 
 function renderAdminBuildings() {
@@ -2906,6 +2952,161 @@ function handleMatImport(input) {
     input.value='';
   };
   reader.readAsBinaryString(file);
+}
+
+// ══════════════════════════════
+// STYLE MANAGEMENT
+// ══════════════════════════════
+let selectedStyleColor = '#007AFF';
+
+function renderStyleGrids() {
+  // Render both the admin BOM grid and the fulfill grid dynamically
+  const adminGrid = document.getElementById('admin-style-grid');
+  const fulfillGrid = document.getElementById('fulfill-style-grid');
+
+  buildingStyles.forEach(s => {
+    // Count buildings for this style
+    const count = buildings.filter(b => b.name.toUpperCase().includes(s.key)).length;
+
+    if (adminGrid) {
+      const card = document.createElement('div');
+      card.className = 'style-card';
+      card.style.cssText = 'background:var(--bg2);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;border:2px solid transparent;position:relative;';
+      card.innerHTML = `
+        <button onclick="event.stopPropagation();openStyleModal('${s.key}')" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:14px;color:var(--label3);cursor:pointer;padding:2px;line-height:1;">✏️</button>
+        <div style="font-size:28px;margin-bottom:6px;">${s.icon}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--label);">${s.label}</div>
+        <div style="font-size:10px;color:var(--label3);margin-top:3px;">${s.subtypes}</div>
+        <div style="font-size:10px;color:${s.color};font-weight:600;margin-top:4px;">${count} model${count!==1?'s':''}</div>`;
+      card.onclick = () => selectAdminStyle(s.key);
+      adminGrid.appendChild(card);
+    }
+
+    if (fulfillGrid) {
+      const card = document.createElement('div');
+      card.className = 'style-card';
+      card.style.cssText = 'background:var(--bg2);border-radius:16px;padding:20px 14px;cursor:pointer;text-align:center;border:2px solid transparent;';
+      card.innerHTML = `
+        <div style="font-size:34px;margin-bottom:8px;">${s.icon}</div>
+        <div style="font-size:16px;font-weight:700;color:var(--label);">${s.label}</div>
+        <div style="font-size:11px;color:var(--label3);margin-top:4px;">${s.subtypes}</div>`;
+      card.onclick = () => selectStyle(s.key);
+      fulfillGrid.appendChild(card);
+    }
+  });
+}
+
+function refreshStyleGrids() {
+  const adminGrid = document.getElementById('admin-style-grid');
+  const fulfillGrid = document.getElementById('fulfill-style-grid');
+  if (adminGrid) adminGrid.innerHTML = '';
+  if (fulfillGrid) fulfillGrid.innerHTML = '';
+  renderStyleGrids();
+}
+
+// ── Add menu dropdown ──
+function toggleAddMenu() {
+  const dd = document.getElementById('bom-add-dropdown');
+  dd.classList.toggle('open');
+  // Close when clicking outside
+  setTimeout(() => {
+    document.addEventListener('click', closeAddMenuOnOutside, { once: true });
+  }, 10);
+}
+
+function closeAddMenu() {
+  document.getElementById('bom-add-dropdown').classList.remove('open');
+}
+
+function closeAddMenuOnOutside(e) {
+  if (!e.target.closest('#bom-add-menu')) closeAddMenu();
+}
+
+// ── Style Modal ──
+function openStyleModal(styleKey) {
+  editingStyleKey = styleKey;
+  const s = styleKey ? buildingStyles.find(x => x.key === styleKey) : null;
+  document.getElementById('style-modal-title').textContent = s ? 'Edit Style' : 'New Style';
+  document.getElementById('st-label').value = s ? s.label : '';
+  document.getElementById('st-subtypes').value = s ? s.subtypes : '';
+  document.getElementById('st-icon').value = s ? s.icon : '🏠';
+  selectedStyleColor = s ? s.color : '#007AFF';
+  document.getElementById('st-del-btn').style.display = s ? 'flex' : 'none';
+
+  // Mark selected swatch
+  document.querySelectorAll('.color-swatch').forEach(sw => {
+    sw.classList.toggle('selected', sw.dataset.color === selectedStyleColor);
+  });
+
+  updateStylePreview();
+  document.getElementById('style-modal').classList.add('open');
+}
+
+function closeStyleModal() {
+  document.getElementById('style-modal').classList.remove('open');
+}
+
+function pickColor(swatchEl) {
+  selectedStyleColor = swatchEl.dataset.color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  swatchEl.classList.add('selected');
+  updateStylePreview();
+}
+
+function updateStylePreview() {
+  const label = document.getElementById('st-label').value || 'Style Name';
+  const icon = document.getElementById('st-icon').value || '🏠';
+  const subtypes = document.getElementById('st-subtypes').value || 'Sub-types';
+  document.getElementById('style-preview-icon').textContent = icon;
+  document.getElementById('style-preview-label').textContent = label;
+  document.getElementById('style-preview-subtypes').textContent = subtypes;
+  document.getElementById('style-preview-card').style.borderColor = selectedStyleColor + '66';
+  document.getElementById('style-preview-label').style.color = selectedStyleColor;
+}
+
+function saveStyleModal() {
+  const label = document.getElementById('st-label').value.trim();
+  const subtypes = document.getElementById('st-subtypes').value.trim();
+  const icon = document.getElementById('st-icon').value.trim() || '🏠';
+  if (!label) { showToast('⚠ Style name required'); return; }
+
+  const key = label.toUpperCase();
+
+  if (editingStyleKey) {
+    const s = buildingStyles.find(x => x.key === editingStyleKey);
+    if (s) {
+      // Update buildings that used the old key if label changed
+      if (s.key !== key) {
+        buildings.forEach(b => {
+          if (b.name.toUpperCase().includes(s.key)) {
+            b.name = b.name.replace(new RegExp(s.label, 'gi'), label);
+          }
+        });
+      }
+      s.key = key; s.label = label; s.subtypes = subtypes; s.icon = icon; s.color = selectedStyleColor;
+    }
+  } else {
+    if (buildingStyles.find(x => x.key === key)) { showToast('⚠ Style already exists'); return; }
+    buildingStyles.push({ key, icon, color: selectedStyleColor, label, subtypes });
+  }
+
+  closeStyleModal();
+  refreshStyleGrids();
+  showToast(editingStyleKey ? '✓ Style updated' : `✓ "${label}" style added`);
+}
+
+function deleteStyle() {
+  if (!editingStyleKey) return;
+  const s = buildingStyles.find(x => x.key === editingStyleKey);
+  const bldCount = buildings.filter(b => b.name.toUpperCase().includes(editingStyleKey)).length;
+  if (bldCount > 0) {
+    showToast(`⚠ Can't delete — ${bldCount} building${bldCount!==1?'s':''} use this style`);
+    return;
+  }
+  buildingStyles = buildingStyles.filter(x => x.key !== editingStyleKey);
+  closeStyleModal();
+  refreshStyleGrids();
+  showToast('Style deleted');
 }
 
 // ══════════════════════════════
@@ -3386,6 +3587,7 @@ function doLogin() {
   renderInv();
   renderRecv();
   populateShedSelect();
+  renderStyleGrids();
 }
 
 function doLogout() {
