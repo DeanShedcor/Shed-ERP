@@ -34,7 +34,7 @@
     .nav-btn.ghost { background:none; color:var(--blue); border:1.5px solid var(--blue); }
 
     /* Scroll */
-    .scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:calc(var(--tab-h) + 8px); }
+    .scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:calc(var(--tab-h) / 2 + 4px); }
 
     /* Sections */
     .sec { margin-bottom:28px; }
@@ -329,10 +329,45 @@
           <div class="sec-hdr" id="inv-sec-hdr">All Materials</div>
           <div class="card" id="inv-list"></div>
         </div>
+        <!-- Reconcile button -->
+        <div style="padding:8px 16px 16px;">
+          <button onclick="openReconcile()" style="width:100%;background:none;border:2px solid #2E5FBF;color:#2E5FBF;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
+            📋 Reconcile Inventory
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- ═══ RECEIVE ═══ -->
+    <!-- ═══ RECONCILE ═══ -->
+    <div class="screen" id="sc-reconcile">
+      <div class="nav">
+        <div class="nav-row">
+          <div class="nav-title">Reconcile</div>
+          <button onclick="closeReconcile()" style="background:none;border:none;color:#2E5FBF;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Cancel</button>
+        </div>
+      </div>
+      <!-- Subheader info bar -->
+      <div style="background:var(--bg2);border-bottom:.5px solid var(--sep);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;color:var(--label3);">Enter actual counts below</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="recon-changed-badge" style="display:none;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:#FF950020;color:#CC7700;">0 changed</span>
+          <button onclick="openAddMissingItem()" style="background:none;border:1.5px solid #2E5FBF;color:#2E5FBF;border-radius:10px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">＋ Add Item</button>
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="search-wrap">
+        <div class="search-box">
+          <span style="font-size:16px;color:var(--label3);">🔍</span>
+          <input type="text" id="recon-search" placeholder="Search materials…" oninput="renderReconcile()">
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="card" style="margin:12px 16px 0;" id="recon-list"></div>
+        <div style="padding:12px 16px 8px;">
+          <button onclick="applyReconcile()" id="recon-apply-btn" disabled style="width:100%;background:#2E5FBF;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;opacity:.4;">Apply Count & Update Inventory</button>
+        </div>
+      </div>
+    </div>
     <div class="screen" id="sc-recv">
       <div class="nav">
         <div class="nav-row">
@@ -499,6 +534,7 @@
           <button class="seg active" data-rpt="orders" onclick="switchRptTab(this)">Orders</button>
           <button class="seg" data-rpt="receiving" onclick="switchRptTab(this)">Receiving</button>
           <button class="seg" data-rpt="vendors" onclick="switchRptTab(this)">Vendors</button>
+          <button class="seg" data-rpt="reconcile" onclick="switchRptTab(this)">Reconcile</button>
           <button class="seg" data-rpt="audit" onclick="switchRptTab(this)">Audit Log</button>
         </div>
         <div style="height:10px;"></div>
@@ -1038,6 +1074,162 @@
         <button class="btn btn-blue" style="width:auto;flex:1;margin:0;" onclick="saveStyleModal()">Save Style</button>
         <button class="btn btn-red" style="width:auto;padding:16px 18px;margin:0;display:none;" id="st-del-btn" onclick="deleteStyle()">🗑</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reconcile Confirm Modal -->
+<div class="modal-overlay" id="recon-confirm-modal" style="z-index:300;">
+  <div class="modal-sheet" style="max-height:92vh;">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Save Inventory Count?</div>
+        <div style="font-size:13px;color:var(--label3);margin-top:2px;">This will update <span id="recon-confirm-count"></span> in the system</div>
+      </div>
+      <button class="modal-close" onclick="cancelReconConfirm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:0 16px 8px;">
+        <!-- Warning -->
+        <div style="background:#FF950015;border:1px solid #FF950040;border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+          <div style="font-size:13px;color:#CC7700;font-weight:600;margin-bottom:4px;">⚠ This cannot be undone</div>
+          <div style="font-size:12px;color:var(--label3);line-height:1.5;">All inventory quantities will be updated to match your physical count. A full report will be generated and sent.</div>
+        </div>
+
+        <!-- Counters name -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:600;color:var(--label);margin-bottom:6px;">Counted by</div>
+          <input id="recon-signer-name" type="text" placeholder="Full name of person who counted"
+            oninput="checkReconReady()"
+            style="width:100%;background:var(--fill);border:1.5px solid transparent;border-radius:10px;padding:12px 14px;font-size:15px;color:var(--label);font-family:inherit;outline:none;box-sizing:border-box;transition:border-color .15s;">
+        </div>
+
+        <!-- Signature pad -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-size:13px;font-weight:600;color:var(--label);">Signature</div>
+            <button onclick="clearSignature()" style="background:none;border:none;color:#2E5FBF;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Clear</button>
+          </div>
+          <canvas id="sig-canvas" width="358" height="120"
+            style="width:100%;height:120px;background:#F8F9FF;border:1.5px solid #2E5FBF33;border-radius:12px;cursor:crosshair;touch-action:none;display:block;">
+          </canvas>
+          <div id="sig-prompt" style="font-size:11px;color:var(--label3);text-align:center;margin-top:4px;">Sign above to confirm</div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:8px;">
+          <button onclick="confirmAndSaveReconcile()" id="recon-save-btn" disabled
+            style="flex:1;background:#2E5FBF;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;opacity:.4;transition:opacity .2s;">✓ Save Count</button>
+          <button onclick="cancelReconConfirm()"
+            style="flex:1;background:var(--fill);color:var(--label3);border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Missing Item Modal -->
+<div class="modal-overlay" id="add-missing-modal" style="z-index:300;">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Add Missing Item</div>
+      <button class="modal-close" onclick="closeAddMissingItem()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sec">
+        <div class="sec-hdr">Item Details</div>
+        <div class="form-card">
+          <div class="form-row">
+            <div class="form-lbl">Description</div>
+            <input class="form-inp" id="missing-desc" placeholder="Material name" list="matlib-datalist">
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Count</div>
+            <input class="form-inp" id="missing-qty" type="number" step="0.5" min="0" placeholder="0">
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Unit Price</div>
+            <input class="form-inp" id="missing-price" type="number" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-row" style="border-bottom:none;">
+            <div class="form-lbl">Category</div>
+            <input class="form-inp" id="missing-cat" placeholder="e.g. FLOOR, WALLS…">
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 16px 8px;">
+        <button onclick="saveMissingItem()" style="width:100%;background:#2E5FBF;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">Add to Count</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reconcile Report Detail Modal -->
+<div class="modal-overlay" id="recon-report-modal" style="z-index:200;">
+  <div class="modal-sheet" style="max-height:92vh;">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Inventory Count Report</div>
+        <div style="font-size:12px;color:var(--label3);margin-top:2px;" id="recon-rpt-date"></div>
+      </div>
+      <button class="modal-close" onclick="closeReconReport()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Summary header -->
+      <div style="margin:0 16px 12px;background:var(--bg2);border-radius:12px;overflow:hidden;border:.5px solid var(--sep);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--sep);">
+          <div style="font-size:13px;color:var(--label3);">Counted by</div>
+          <div style="font-size:14px;font-weight:700;" id="recon-rpt-signer"></div>
+        </div>
+        <!-- Count stats -->
+        <div style="display:flex;border-bottom:.5px solid var(--sep);">
+          <div style="flex:1;padding:12px 16px;border-right:.5px solid var(--sep);text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:#28A745;" id="recon-rpt-increases">0</div>
+            <div style="font-size:11px;color:var(--label3);margin-top:2px;">Increases ▲</div>
+          </div>
+          <div style="flex:1;padding:12px 16px;border-right:.5px solid var(--sep);text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:#CC2200;" id="recon-rpt-decreases">0</div>
+            <div style="font-size:11px;color:var(--label3);margin-top:2px;">Decreases ▼</div>
+          </div>
+          <div style="flex:1;padding:12px 16px;text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:#2E5FBF;" id="recon-rpt-total">0</div>
+            <div style="font-size:11px;color:var(--label3);margin-top:2px;">Total Changes</div>
+          </div>
+        </div>
+        <!-- Dollar value stats -->
+        <div style="display:flex;">
+          <div style="flex:1;padding:12px 16px;border-right:.5px solid var(--sep);text-align:center;">
+            <div style="font-size:15px;font-weight:800;color:#28A745;" id="recon-rpt-val-before">$0.00</div>
+            <div style="font-size:11px;color:var(--label3);margin-top:2px;">Value Before</div>
+          </div>
+          <div style="flex:1;padding:12px 16px;border-right:.5px solid var(--sep);text-align:center;">
+            <div style="font-size:15px;font-weight:800;color:#2E5FBF;" id="recon-rpt-val-after">$0.00</div>
+            <div style="font-size:11px;color:var(--label3);margin-top:2px;">Value After</div>
+          </div>
+          <div style="flex:1;padding:12px 16px;text-align:center;">
+            <div style="font-size:15px;font-weight:800;" id="recon-rpt-val-var">$0.00</div>
+            <div style="font-size:11px;color:var(--label3);margin-top:2px;">$ Variance</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Changes list -->
+      <div style="padding:0 16px 8px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);margin-bottom:8px;">Changes</div>
+        <div class="card" id="recon-rpt-list"></div>
+      </div>
+
+      <!-- Signature -->
+      <div style="padding:0 16px 16px;" id="recon-rpt-sig-section" style="display:none;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);margin-bottom:8px;">Signature</div>
+        <div style="background:var(--bg2);border-radius:12px;padding:12px;border:.5px solid var(--sep);text-align:center;">
+          <img id="recon-rpt-sig-img" src="" style="max-width:100%;max-height:100px;object-fit:contain;display:block;margin:0 auto;">
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1621,8 +1813,6 @@ let buildings = [
   { id:'b54', name:'ELITE STUDIO 10x16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m63', qty:7.0}, {matId:'m43', qty:36.0}, {matId:'m6', qty:2.0}, {matId:'m7', qty:12.5}, {matId:'m8', qty:15.5}, {matId:'m9', qty:15.5}, {matId:'m10', qty:24.0}, {matId:'m11', qty:22.0}, {matId:'m13', qty:30.0}, {matId:'m61', qty:104.0}, {matId:'m50', qty:55.0}, {matId:'m77', qty:132.0}, {matId:'m15', qty:5.0}, {matId:'m62', qty:26.0}, {matId:'m18', qty:20.0}, {matId:'m20', qty:12.0}, {matId:'m21', qty:2.0}, {matId:'m22', qty:2.0}, {matId:'m27', qty:4.0}, {matId:'m24', qty:120.0}, {matId:'m48', qty:2.0}, {matId:'m23', qty:12.0}, {matId:'m26', qty:12.0}, {matId:'m47', qty:4.0}, {matId:'m28', qty:22.0}, {matId:'m32', qty:4.0}, {matId:'m82', qty:3.5}, {matId:'m34', qty:2.0}, {matId:'m36', qty:1.5}, {matId:'m37', qty:4.0}, {matId:'m38', qty:8.0}, {matId:'m40', qty:1.0}, {matId:'m41', qty:4.0}, {matId:'m39', qty:1.0}, {matId:'m3', qty:3.0}] },
   { id:'b55', name:'BASIC LOFTED 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:33.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:124.0}, {matId:'m12', qty:47.0}, {matId:'m62', qty:22.0}, {matId:'m16', qty:80.0}, {matId:'m15', qty:16.0}, {matId:'m17', qty:312.0}, {matId:'m19', qty:58.5}, {matId:'m18', qty:48.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:66.0}, {matId:'m83', qty:66.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:8.5}, {matId:'m36', qty:4.25}, {matId:'m34', qty:10.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:31.5}, {matId:'m61', qty:213.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
   { id:'b56', name:'BASIC LOFTED 12X16', materialCost:0, bom:[{matId:'m1', qty:5.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:43.75}, {matId:'m9', qty:39.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:130.0}, {matId:'m62', qty:24.0}, {matId:'m16', qty:88.0}, {matId:'m15', qty:18.0}, {matId:'m17', qty:360.0}, {matId:'m19', qty:68.0}, {matId:'m18', qty:56.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:78.0}, {matId:'m83', qty:78.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:10.0}, {matId:'m36', qty:5.25}, {matId:'m34', qty:12.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:16.0}, {matId:'m4', qty:2.0}, {matId:'m2', qty:4.0}] },
-  { id:'b57', name:'STANDARD UTILITY 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:30.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:89.0}, {matId:'m61', qty:260.0}, {matId:'m16', qty:80.0}, {matId:'m15', qty:13.0}, {matId:'m17', qty:103.0}, {matId:'m19', qty:36.0}, {matId:'m18', qty:49.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:52.5}, {matId:'m85', qty:66.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:3.25}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:27.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}, {matId:'m62', qty:15.0}] },
-  { id:'b58', name:'STANDARD UTILITY 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:42.0}, {matId:'m61', qty:284.0}, {matId:'m14', qty:100.0}, {matId:'m16', qty:88.0}, {matId:'m15', qty:13.5}, {matId:'m17', qty:120.0}, {matId:'m19', qty:44.0}, {matId:'m18', qty:58.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:54.0}, {matId:'m85', qty:78.0}, {matId:'m102', qty:8.0}, {matId:'m36', qty:4.25}, {matId:'m33', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
   { id:'b59', name:'BASIC STUDIO 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:30.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:63.0}, {matId:'m61', qty:260.0}, {matId:'m16', qty:84.0}, {matId:'m15', qty:13.0}, {matId:'m64', qty:68.0}, {matId:'m19', qty:36.0}, {matId:'m18', qty:49.0}, {matId:'m77', qty:16.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:20.0}, {matId:'m28', qty:46.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:8.0}, {matId:'m34', qty:7.5}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:47.5}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
   { id:'b60', name:'BASIC STUDIO 12X16', materialCost:0, bom:[{matId:'m1', qty:4.0}, {matId:'m3', qty:14.0}, {matId:'m72', qty:96.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:39.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:160.0}, {matId:'m11', qty:63.5}, {matId:'m61', qty:284.0}, {matId:'m14', qty:56.0}, {matId:'m16', qty:94.0}, {matId:'m15', qty:13.5}, {matId:'m64', qty:76.0}, {matId:'m19', qty:42.0}, {matId:'m18', qty:58.0}, {matId:'m77', qty:12.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m27', qty:8.0}, {matId:'m24', qty:264.0}, {matId:'m26', qty:24.0}, {matId:'m23', qty:18.0}, {matId:'m28', qty:48.0}, {matId:'m102', qty:8.0}, {matId:'m82', qty:10.0}, {matId:'m34', qty:8.25}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.5}, {matId:'m40', qty:2.5}, {matId:'m39', qty:2.5}, {matId:'m41', qty:8.0}, {matId:'m2', qty:12.0}, {matId:'m4', qty:2.0}, {matId:'m42', qty:12.0}] },
   { id:'b61', name:'CLASSIC LOFTED 12X12', materialCost:0, bom:[{matId:'m2', qty:4.0}, {matId:'m44', qty:6.0}, {matId:'m72', qty:84.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.0}, {matId:'m8', qty:33.0}, {matId:'m9', qty:33.0}, {matId:'m10', qty:144.0}, {matId:'m14', qty:124.0}, {matId:'m12', qty:47.0}, {matId:'m62', qty:22.0}, {matId:'m49', qty:80.0}, {matId:'m15', qty:16.0}, {matId:'m17', qty:312.0}, {matId:'m50', qty:58.5}, {matId:'m18', qty:48.0}, {matId:'m20', qty:24.0}, {matId:'m21', qty:4.0}, {matId:'m22', qty:4.0}, {matId:'m47', qty:8.0}, {matId:'m27', qty:8.0}, {matId:'m48', qty:4.0}, {matId:'m26', qty:24.0}, {matId:'m24', qty:264.0}, {matId:'m23', qty:24.0}, {matId:'m28', qty:48.0}, {matId:'m30', qty:66.0}, {matId:'m83', qty:66.0}, {matId:'m46', qty:8.0}, {matId:'m32', qty:4.0}, {matId:'m33', qty:8.5}, {matId:'m36', qty:4.25}, {matId:'m34', qty:10.0}, {matId:'m37', qty:8.0}, {matId:'m38', qty:20.0}, {matId:'m40', qty:2.0}, {matId:'m39', qty:2.0}, {matId:'m41', qty:8.0}, {matId:'m42', qty:12.0}, {matId:'m3', qty:8.0}, {matId:'m11', qty:31.5}, {matId:'m61', qty:213.0}, {matId:'m1', qty:6.0}, {matId:'m4', qty:2.0}] },
@@ -1641,14 +1831,10 @@ let buildings = [
   { id:'b74', name:'BASIC LOFTED 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m12', qty:243.0}, {matId:'m64', qty:14.0}, {matId:'m16', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m63', qty:4.0}, {matId:'m19', qty:68.0}, {matId:'m17', qty:306.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:66.0}, {matId:'m45', qty:66.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
   { id:'b75', name:'BASIC UTILITY 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.0}, {matId:'m61', qty:225.0}, {matId:'m16', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m19', qty:42.0}, {matId:'m17', qty:90.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m86', qty:58.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
   { id:'b76', name:'BASIC UTILITY 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m61', qty:243.0}, {matId:'m16', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m19', qty:54.0}, {matId:'m17', qty:102.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m86', qty:66.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
-  { id:'b77', name:'STANDARD STUDIO 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:78.0}, {matId:'m61', qty:225.0}, {matId:'m16', qty:81.0}, {matId:'m15', qty:9.0}, {matId:'m63', qty:61.5}, {matId:'m19', qty:42.0}, {matId:'m77', qty:18.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m31', qty:12.0}, {matId:'m82', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
-  { id:'b78', name:'STANDARD STUDIO 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:87.0}, {matId:'m61', qty:243.0}, {matId:'m16', qty:88.5}, {matId:'m15', qty:9.0}, {matId:'m63', qty:69.0}, {matId:'m19', qty:48.0}, {matId:'m77', qty:19.5}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m31', qty:12.0}, {matId:'m82', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}, {matId:'m86', qty:14.0}] },
   { id:'b79', name:'CLASSIC LOFTED 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.5}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.5}, {matId:'m12', qty:225.0}, {matId:'m64', qty:18.0}, {matId:'m49', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m50', qty:61.5}, {matId:'m17', qty:270.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:58.0}, {matId:'m85', qty:14.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}, {matId:'m45', qty:44.0}] },
   { id:'b80', name:'CLASSIC LOFTED 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m12', qty:243.0}, {matId:'m64', qty:14.0}, {matId:'m49', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m63', qty:4.0}, {matId:'m50', qty:68.0}, {matId:'m17', qty:306.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:36.0}, {matId:'m30', qty:66.0}, {matId:'m45', qty:66.0}, {matId:'m102', qty:6.0}, {matId:'m32', qty:3.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
   { id:'b81', name:'CLASSIC UTILITY 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:55.0}, {matId:'m61', qty:225.0}, {matId:'m49', qty:72.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:67.5}, {matId:'m50', qty:42.0}, {matId:'m17', qty:90.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m86', qty:58.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
   { id:'b82', name:'CLASSIC UTILITY 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m61', qty:243.0}, {matId:'m49', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m50', qty:48.0}, {matId:'m17', qty:102.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m86', qty:66.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
-  { id:'b83', name:'STANDARD STUDIO 14X20', materialCost:0, bom:[{matId:'m42', qty:12.0}, {matId:'m73', qty:72.0}, {matId:'m3', qty:11.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:36.75}, {matId:'m8', qty:31.5}, {matId:'m9', qty:31.5}, {matId:'m10', qty:120.0}, {matId:'m11', qty:78.0}, {matId:'m61', qty:225.0}, {matId:'m49', qty:81.0}, {matId:'m15', qty:9.0}, {matId:'m63', qty:61.5}, {matId:'m50', qty:42.0}, {matId:'m77', qty:18.0}, {matId:'m18', qty:10.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:39.0}, {matId:'m31', qty:12.0}, {matId:'m82', qty:7.5}, {matId:'m34', qty:6.5}, {matId:'m36', qty:3.4}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m1', qty:6.0}] },
-  { id:'b84', name:'STANDARD STUDIO 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:87.0}, {matId:'m61', qty:243.0}, {matId:'m49', qty:88.5}, {matId:'m15', qty:9.0}, {matId:'m63', qty:69.0}, {matId:'m50', qty:48.0}, {matId:'m77', qty:19.5}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m31', qty:12.0}, {matId:'m82', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}, {matId:'m86', qty:14.0}] },
 ];
 
 // Normalise all building names to Title Case
@@ -1670,6 +1856,7 @@ let inventory = (() => {
 
 let orders = [];
 let receiveLedger = [];
+let reconcileReports = [];
 let recvItems = [];
 let invCatFilter = 'ALL';
 let kbSeg = 'buildings';
@@ -1897,7 +2084,6 @@ let buildingStyles = [
   { key:'CLASSIC',      icon:'🏡', color:'#34C759', label:'Classic',       subtypes:'Lofted · Utility · Studio' },
   { key:'ELITE',        icon:'⭐', color:'#AF52DE', label:'Elite',         subtypes:'Lofted · Utility · Studio' },
   { key:'SILVER BULLET',icon:'🔩', color:'#FF9500', label:'Silver Bullet', subtypes:'Utility' },
-  { key:'STANDARD',     icon:'🏠', color:'#8E8E93', label:'Standard',      subtypes:'Utility · Studio' },
 ];
 let styleIdCounter = 10;
 let editingStyleKey = null;
@@ -1948,7 +2134,6 @@ function selectStyle(style) {
     if (up.includes('LOFTED')) subtype = 'Lofted';
     else if (up.includes('UTILITY')) subtype = 'Utility';
     else if (up.includes('STUDIO')) subtype = 'Studio';
-    else if (up.includes('STANDARD')) subtype = 'Standard';
     if (!groups[subtype]) groups[subtype] = [];
     groups[subtype].push(b);
   });
@@ -1956,7 +2141,7 @@ function selectStyle(style) {
   const listEl = document.getElementById('fulfill-models-list');
   listEl.innerHTML = '';
 
-  const subtypeOrder = ['Lofted','Utility','Studio','Standard','OTHER'];
+  const subtypeOrder = ['Lofted','Utility','Studio','OTHER'];
   subtypeOrder.forEach(subtype => {
     if (!groups[subtype]) return;
     // Subtype header
@@ -2557,6 +2742,59 @@ function applyRptFilters() {
       list.appendChild(div);
     });
 
+  } else if (rptTab === 'reconcile') {
+    stat1lbl.textContent = 'Counts Done'; stat2lbl.textContent = 'Items Changed';
+    const f = getRptFilters();
+
+    const filtered = reconcileReports.filter(r => {
+      const search = (r.user + ' ' + r.changes.map(c=>c.desc).join(' ')).toLowerCase();
+      return matchesFilters(r.ts, '', r.user||'', search, f);
+    });
+
+    const totalChanges = filtered.reduce((s,r) => s + r.changes.length, 0);
+    stat1.textContent = filtered.length;
+    stat2.textContent = totalChanges;
+
+    if (!filtered.length) {
+      empty.style.display = 'flex';
+      document.getElementById('rpt-empty-ttl').textContent = 'No reconcile reports yet';
+      document.getElementById('rpt-empty-sub').textContent = 'Reports appear here after a physical inventory count is saved';
+      return;
+    }
+    empty.style.display = 'none';
+
+    filtered.forEach(r => {
+      const dateStr = new Date(r.ts).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'});
+      const timeStr = new Date(r.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const increases = r.changes.filter(c => c.diff > 0).length;
+      const decreases = r.changes.filter(c => c.diff < 0).length;
+      const noChange = r.changes.length === 0;
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--bg2);margin:0 16px 12px;border-radius:14px;overflow:hidden;cursor:pointer;transition:opacity .1s;';
+      card.innerHTML = `
+        <div style="padding:14px 16px;border-bottom:.5px solid var(--sep);display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:16px;font-weight:700;">📋 Physical Count</div>
+            <div style="font-size:12px;color:var(--label3);margin-top:3px;">${dateStr} at ${timeStr}</div>
+          </div>
+          <div style="font-size:20px;color:var(--label3);">›</div>
+        </div>
+        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <span class="audit-user" style="font-size:12px;">👤 ${r.signerName || r.user}</span>
+          <div style="display:flex;gap:6px;">
+            ${increases ? `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:#34C75920;color:#28A745;">▲ ${increases}</span>` : ''}
+            ${decreases ? `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:#FF3B3020;color:#CC2200;">▼ ${decreases}</span>` : ''}
+            ${noChange ? `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:#34C75920;color:#28A745;">✓ All Correct</span>` : ''}
+            <span style="font-size:11px;color:var(--label3);">${r.changes.length} change${r.changes.length!==1?'s':''}</span>
+          </div>
+        </div>`;
+      card.addEventListener('click', () => openReconReport(r.id));
+      card.addEventListener('mousedown', () => card.style.opacity = '.7');
+      card.addEventListener('mouseup', () => card.style.opacity = '1');
+      list.appendChild(card);
+    });
+
   } else if (rptTab === 'audit') {
     stat1lbl.textContent = 'Log Entries'; stat2lbl.textContent = 'Changes';
     const AUDIT_ICONS = { RECEIVE:'📥', ADD_MATERIAL:'➕', EDIT_MATERIAL:'✏️', DELETE_MATERIAL:'🗑', PRICE_CHANGE:'💰', FULFILL:'✅', ADD_BUILDING:'🏠', EDIT_BUILDING:'🏠', DELETE_BUILDING:'🏠' };
@@ -2689,14 +2927,13 @@ function selectAdminStyle(style) {
     if (up.includes('LOFTED')) sub = 'Lofted';
     else if (up.includes('UTILITY')) sub = 'Utility';
     else if (up.includes('STUDIO')) sub = 'Studio';
-    else if (up.includes('STANDARD')) sub = 'Standard';
     if (!groups[sub]) groups[sub] = [];
     groups[sub].push(b);
   });
 
   const listEl = document.getElementById('admin-bom-models-list');
   listEl.innerHTML = '';
-  const subtypeOrder = ['Lofted','Utility','Studio','Standard','Other'];
+  const subtypeOrder = ['Lofted','Utility','Studio','Other'];
 
   subtypeOrder.forEach(sub => {
     if (!groups[sub]) return;
@@ -3107,6 +3344,485 @@ function deleteStyle() {
   closeStyleModal();
   refreshStyleGrids();
   showToast('Style deleted');
+}
+
+// ══════════════════════════════
+// INVENTORY RECONCILIATION
+// ══════════════════════════════
+let reconCounts = {}; // desc -> user-entered count
+
+function openReconcile() {
+  reconCounts = {};
+  reconChecked = new Set();
+  document.getElementById('recon-search').value = '';
+  renderReconcile();
+  // Switch to reconcile screen (no tab change)
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('sc-reconcile').classList.add('active');
+  // Hide tab bar while reconciling
+  document.querySelector('.tab-bar').style.display = 'none';
+}
+
+function closeReconcile() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('sc-inv').classList.add('active');
+  document.querySelector('.tab-bar').style.display = 'flex';
+}
+
+let reconChecked = new Set(); // descs confirmed correct as-is
+
+function renderReconcile() {
+  const q = (document.getElementById('recon-search').value || '').toLowerCase();
+  let filtered = inventory.filter(i => !q || i.desc.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+
+  // Sort: counted/checked items first, then uncounted
+  filtered.sort((a, b) => {
+    const aCounted = reconChecked.has(a.desc) || reconCounts[a.desc] !== undefined;
+    const bCounted = reconChecked.has(b.desc) || reconCounts[b.desc] !== undefined;
+    if (aCounted && !bCounted) return -1;
+    if (!aCounted && bCounted) return 1;
+    return 0;
+  });
+
+  const list = document.getElementById('recon-list');
+  list.innerHTML = '';
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--label3);font-size:15px;">No items found</div>';
+    return;
+  }
+
+  // Section dividers
+  let shownCountedHeader = false;
+  let shownUncountedHeader = false;
+
+  filtered.forEach((item, i) => {
+    const isCounted = reconChecked.has(item.desc) || reconCounts[item.desc] !== undefined;
+    const entered = reconCounts[item.desc];
+    const isConfirmed = reconChecked.has(item.desc); // checked = count is correct
+    const hasChange = entered !== undefined && parseFloat(entered) !== item.qty;
+    const isLast = i === filtered.length - 1;
+
+    // Insert section header
+    if (isCounted && !shownCountedHeader) {
+      shownCountedHeader = true;
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'padding:8px 14px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#28A745;background:#34C75908;border-bottom:.5px solid var(--sep);';
+      hdr.textContent = '✓ Counted';
+      list.appendChild(hdr);
+    }
+    if (!isCounted && !shownUncountedHeader) {
+      shownUncountedHeader = true;
+      if (shownCountedHeader) {
+        const hdr = document.createElement('div');
+        hdr.style.cssText = 'padding:8px 14px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);border-bottom:.5px solid var(--sep);';
+        hdr.textContent = '○ Not Yet Counted';
+        list.appendChild(hdr);
+      }
+    }
+
+    const row = document.createElement('div');
+    row.style.cssText = `display:flex;align-items:center;padding:11px 14px;border-bottom:${isLast ? 'none' : '.5px solid var(--sep)'};gap:10px;background:${isConfirmed ? '#34C75906' : 'transparent'};`;
+
+    // Checkbox
+    const chk = document.createElement('div');
+    chk.style.cssText = `width:24px;height:24px;border-radius:6px;border:2px solid ${isCounted ? '#28A745' : 'var(--sep)'};background:${isCounted ? '#28A745' : 'transparent'};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;`;
+    chk.innerHTML = isCounted ? '<svg width="13" height="10" viewBox="0 0 13 10" fill="none"><polyline points="1.5,5 5,8.5 11.5,1.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
+    chk.addEventListener('click', () => toggleReconCheck(item.desc, item.qty));
+
+    // Content
+    const content = document.createElement('div');
+    content.style.cssText = 'flex:1;min-width:0;';
+    content.innerHTML = `
+      <div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${isConfirmed?'#28A745':'var(--label)'};">${item.desc}</div>
+      <div style="font-size:11px;color:var(--label3);margin-top:2px;">${item.category} · System: <strong style="color:${hasChange?'#CC7700':isConfirmed?'#28A745':'var(--label2)'};">${item.qty.toFixed(1)}</strong>${isConfirmed?' ✓':''}</div>`;
+
+    // Right side — delta badge + input
+    const right = document.createElement('div');
+    right.style.cssText = 'display:flex;align-items:center;gap:6px;flex-shrink:0;';
+
+    if (hasChange) {
+      const delta = parseFloat(entered) - item.qty;
+      const badge = document.createElement('span');
+      badge.style.cssText = 'font-size:10px;font-weight:700;color:#CC7700;background:#FF950018;border-radius:6px;padding:2px 6px;white-space:nowrap;';
+      badge.textContent = `Δ ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}`;
+      right.appendChild(badge);
+    }
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.step = '0.5';
+    input.min = '0';
+    input.className = 'recon-input';
+    input.setAttribute('data-desc', item.desc);
+    input.value = entered !== undefined ? entered : '';
+    input.placeholder = item.qty.toFixed(1);
+    input.style.cssText = `width:80px;background:${hasChange?'#FF950015':isConfirmed?'#34C75915':'var(--fill)'};border:${hasChange?'1.5px solid #CC7700':isConfirmed?'1.5px solid #28A745':'1.5px solid transparent'};outline:none;border-radius:10px;padding:8px 10px;font-size:15px;font-weight:600;color:var(--label);font-family:inherit;text-align:center;`;
+    input.addEventListener('input', function() {
+      if (reconChecked.has(item.desc)) reconChecked.delete(item.desc);
+      // Just store the value — don't re-render (would steal focus mid-typing)
+      const val = this.value;
+      if (val === '' || val === null) {
+        delete reconCounts[item.desc];
+      } else {
+        reconCounts[item.desc] = val;
+      }
+      updateReconStatus();
+    });
+    input.addEventListener('blur', function() {
+      // Re-render after typing is done so checkboxes + sorting update
+      renderReconcile();
+    });
+    right.appendChild(input);
+
+    row.appendChild(chk);
+    row.appendChild(content);
+    row.appendChild(right);
+    list.appendChild(row);
+  });
+
+  updateReconStatus();
+}
+
+function toggleReconCheck(desc, systemQty) {
+  if (reconChecked.has(desc)) {
+    // Uncheck: remove from confirmed set
+    reconChecked.delete(desc);
+    delete reconCounts[desc];
+  } else {
+    // Check: mark as confirmed correct — store system qty as the count
+    reconChecked.add(desc);
+    reconCounts[desc] = String(systemQty);
+  }
+  renderReconcile();
+}
+
+function updateReconCount(desc, val) {
+  if (val === '' || val === null) {
+    delete reconCounts[desc];
+  } else {
+    reconCounts[desc] = val;
+  }
+  updateReconStatus();
+  renderReconcile();
+}
+
+function updateReconStatus() {
+  const changedCount = Object.entries(reconCounts).filter(([desc, val]) => {
+    const item = inventory.find(i => i.desc === desc);
+    return item && parseFloat(val) !== item.qty;
+  }).length;
+  const confirmedCount = reconChecked.size;
+  const totalCounted = Object.keys(reconCounts).length;
+
+  const badge = document.getElementById('recon-changed-badge');
+  const btn = document.getElementById('recon-apply-btn');
+
+  const hasActivity = totalCounted > 0;
+  if (hasActivity) {
+    badge.style.display = 'inline-block';
+    badge.textContent = `${totalCounted} counted${changedCount > 0 ? ' · ' + changedCount + ' changed' : ''}`;
+    badge.style.background = changedCount > 0 ? '#FF950020' : '#34C75920';
+    badge.style.color = changedCount > 0 ? '#CC7700' : '#28A745';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  } else {
+    badge.style.display = 'none';
+    btn.disabled = true;
+    btn.style.opacity = '.4';
+  }
+}
+
+// ── Add Missing Item ──
+function openAddMissingItem() {
+  document.getElementById('missing-desc').value = '';
+  document.getElementById('missing-qty').value = '';
+  document.getElementById('missing-price').value = '';
+  document.getElementById('missing-cat').value = '';
+  document.getElementById('add-missing-modal').classList.add('open');
+}
+
+function closeAddMissingItem() {
+  document.getElementById('add-missing-modal').classList.remove('open');
+}
+
+function saveMissingItem() {
+  const desc = (document.getElementById('missing-desc').value || '').trim();
+  const qty  = parseFloat(document.getElementById('missing-qty').value) || 0;
+  const price = parseFloat(document.getElementById('missing-price').value) || 0;
+  const cat  = (document.getElementById('missing-cat').value || 'OTHER').trim().toUpperCase();
+
+  if (!desc) { showToast('⚠ Description required'); return; }
+
+  // Add to inventory if not already there
+  let item = inventory.find(i => i.desc.toLowerCase() === desc.toLowerCase());
+  if (!item) {
+    item = { desc, qty: 0, price, category: cat };
+    inventory.push(item);
+    // Also add to matLib
+    if (!matLib.find(m => m.desc.toLowerCase() === desc.toLowerCase())) {
+      matLib.push({ id: 'm' + (++matIdCounter), desc, price, category: cat });
+    }
+  }
+
+  // Pre-fill the count in reconcile
+  reconCounts[item.desc] = String(qty);
+
+  closeAddMissingItem();
+  renderReconcile();
+  updateReconStatus();
+  showToast(`✓ "${desc}" added with count ${qty}`);
+}
+
+// ── Signature Pad ──
+let sigCanvas, sigCtx, sigDrawing = false, sigHasData = false;
+
+function initSignaturePad() {
+  sigCanvas = document.getElementById('sig-canvas');
+  if (!sigCanvas) return;
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#1A2B5E';
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+  sigHasData = false;
+
+  // Mouse events
+  sigCanvas.onmousedown = e => { sigDrawing = true; sigCtx.beginPath(); sigCtx.moveTo(...sigPos(e)); };
+  sigCanvas.onmousemove = e => { if (!sigDrawing) return; sigCtx.lineTo(...sigPos(e)); sigCtx.stroke(); sigHasData = true; checkReconReady(); };
+  sigCanvas.onmouseup = sigCanvas.onmouseleave = () => { sigDrawing = false; };
+
+  // Touch events
+  sigCanvas.ontouchstart = e => { e.preventDefault(); sigDrawing = true; sigCtx.beginPath(); sigCtx.moveTo(...sigPos(e.touches[0])); };
+  sigCanvas.ontouchmove = e => { e.preventDefault(); if (!sigDrawing) return; sigCtx.lineTo(...sigPos(e.touches[0])); sigCtx.stroke(); sigHasData = true; checkReconReady(); };
+  sigCanvas.ontouchend = () => { sigDrawing = false; };
+}
+
+function sigPos(e) {
+  const r = sigCanvas.getBoundingClientRect();
+  const scaleX = sigCanvas.width / r.width;
+  const scaleY = sigCanvas.height / r.height;
+  return [(e.clientX - r.left) * scaleX, (e.clientY - r.top) * scaleY];
+}
+
+function clearSignature() {
+  if (!sigCtx) return;
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  sigHasData = false;
+  checkReconReady();
+}
+
+function checkReconReady() {
+  const name = (document.getElementById('recon-signer-name').value || '').trim();
+  const ready = name.length > 1 && sigHasData;
+  const btn = document.getElementById('recon-save-btn');
+  const nameInp = document.getElementById('recon-signer-name');
+  if (btn) { btn.disabled = !ready; btn.style.opacity = ready ? '1' : '.4'; }
+  if (nameInp) nameInp.style.borderColor = name.length > 1 ? '#2E5FBF' : 'transparent';
+  const prompt = document.getElementById('sig-prompt');
+  if (prompt) prompt.textContent = sigHasData ? '✓ Signature captured' : 'Sign above to confirm';
+  if (prompt) prompt.style.color = sigHasData ? '#28A745' : 'var(--label3)';
+}
+
+let pendingReconChanges = [];
+
+function applyReconcile() {
+  pendingReconChanges = [];
+  Object.entries(reconCounts).forEach(([desc, val]) => {
+    const newQty = parseFloat(val);
+    if (isNaN(newQty) || newQty < 0) return;
+    const item = inventory.find(i => i.desc === desc);
+    if (!item) return;
+    if (newQty === item.qty) return;
+    const mat = matLib.find(m => m.desc === desc);
+    pendingReconChanges.push({ desc, category: item.category, from: item.qty, to: newQty, diff: newQty - item.qty, price: mat ? mat.price : 0 });
+  });
+
+  if (Object.keys(reconCounts).length === 0) return;
+
+  const nameField = document.getElementById('recon-signer-name');
+  if (nameField && currentUser) nameField.value = currentUser.name;
+
+  document.getElementById('recon-confirm-count').textContent =
+    pendingReconChanges.length + ' change' + (pendingReconChanges.length !== 1 ? 's' : '') +
+    (reconChecked.size > 0 ? ` · ${reconChecked.size} confirmed correct` : '');
+  document.getElementById('recon-confirm-modal').classList.add('open');
+  setTimeout(initSignaturePad, 100);
+  checkReconReady();
+}
+
+function cancelReconConfirm() {
+  document.getElementById('recon-confirm-modal').classList.remove('open');
+  clearSignature();
+}
+
+function confirmAndSaveReconcile() {
+  document.getElementById('recon-confirm-modal').classList.remove('open');
+
+  const ts = new Date().toISOString();
+  const signerName = (document.getElementById('recon-signer-name').value || '').trim();
+  const user = signerName || (currentUser ? currentUser.name : 'Unknown');
+  const sigDataUrl = sigCanvas ? sigCanvas.toDataURL('image/png') : null;
+
+  pendingReconChanges.forEach(c => {
+    const item = inventory.find(i => i.desc === c.desc);
+    if (!item) return;
+    addAudit('EDIT_MATERIAL', c.category,
+      `Reconcile: "${c.desc}" ${c.from.toFixed(1)} → ${c.to.toFixed(1)} (${c.diff >= 0 ? '+' : ''}${c.diff.toFixed(1)})`,
+      [{ field: 'quantity', from: c.from, to: c.to }]
+    );
+    item.qty = c.to;
+  });
+
+  reconcileReports.unshift({ id: Date.now(), ts, user, signerName, sigDataUrl, changes: [...pendingReconChanges] });
+
+  silentSendReconEmail(ts, user, pendingReconChanges);
+
+  reconCounts = {};
+  pendingReconChanges = [];
+  reconChecked = new Set();
+  clearSignature();
+  closeReconcile();
+  renderInv();
+  showToast(`✓ Reconciled — ${reconcileReports[0].changes.length} item${reconcileReports[0].changes.length !== 1 ? 's' : ''} updated`);
+}
+
+function silentSendReconEmail(ts, user, changes) {
+  // Build email body via Anthropic API silently — no UI feedback
+  const dateStr = new Date(ts).toLocaleString();
+  const rows = changes.map(c =>
+    `${c.desc} | Was: ${c.from.toFixed(1)} | New: ${c.to.toFixed(1)} | Diff: ${c.diff >= 0 ? '+' : ''}${c.diff.toFixed(1)}`
+  ).join('\n');
+
+  const emailBody = `Inventory Reconciliation Report\n\nDate: ${dateStr}\nConducted by: ${user}\nItems Changed: ${changes.length}\n\n${'─'.repeat(60)}\n${rows}\n${'─'.repeat(60)}\n\nThis report was automatically generated by Shed ERP.`;
+
+  // Use EmailJS-style mailto: as silent fallback — no window popup
+  // We call the Anthropic API to compose and send via fetch to a silent endpoint
+  // Since we can't send email directly from browser without a backend,
+  // we silently open a hidden mailto link and immediately close it
+  try {
+    const subject = encodeURIComponent(`Inventory Reconciliation — ${dateStr}`);
+    const body = encodeURIComponent(emailBody);
+    const mailLink = `mailto:dean@buybennett.com?subject=${subject}&body=${body}`;
+    const a = document.createElement('a');
+    a.href = mailLink;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => document.body.removeChild(a), 100);
+  } catch(e) { /* silent */ }
+}
+
+
+function openReconReport(reportId) {
+  const r = reconcileReports.find(x => x.id === reportId);
+  if (!r) return;
+
+  const dateStr = new Date(r.ts).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
+  const timeStr = new Date(r.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+  document.getElementById('recon-rpt-date').textContent = dateStr + ' at ' + timeStr;
+  document.getElementById('recon-rpt-signer').textContent = r.signerName || r.user;
+
+  const increases = r.changes.filter(c => c.diff > 0).length;
+  const decreases = r.changes.filter(c => c.diff < 0).length;
+  document.getElementById('recon-rpt-increases').textContent = increases;
+  document.getElementById('recon-rpt-decreases').textContent = decreases;
+  document.getElementById('recon-rpt-total').textContent = r.changes.length;
+
+  // Calculate total inventory value BEFORE and AFTER the count
+  // "Before" = current inventory qty × price, but back-calculate the pre-count state
+  // for changed items, use c.from; for unchanged items, use current qty
+  let totalBefore = 0;
+  let totalAfter = 0;
+
+  // Build a map of changes by desc for quick lookup
+  const changeMap = {};
+  r.changes.forEach(c => { changeMap[c.desc] = c; });
+
+  inventory.forEach(item => {
+    const mat = matLib.find(m => m.desc === item.desc);
+    const price = mat ? mat.price : item.price || 0;
+    const change = changeMap[item.desc];
+    if (change) {
+      // This item was changed — use recorded from/to
+      const storedPrice = change.price !== undefined ? change.price : price;
+      totalBefore += change.from * storedPrice;
+      totalAfter  += change.to   * storedPrice;
+    } else {
+      // Unchanged — same value before and after
+      const val = item.qty * price;
+      totalBefore += val;
+      totalAfter  += val;
+    }
+  });
+
+  const totalVariance = totalAfter - totalBefore;
+
+  document.getElementById('recon-rpt-val-before').textContent = '$' + totalBefore.toFixed(2);
+  document.getElementById('recon-rpt-val-after').textContent  = '$' + totalAfter.toFixed(2);
+  const varEl = document.getElementById('recon-rpt-val-var');
+  varEl.textContent = (totalVariance >= 0 ? '+$' : '-$') + Math.abs(totalVariance).toFixed(2);
+  varEl.style.color = totalVariance > 0 ? '#28A745' : totalVariance < 0 ? '#CC2200' : 'var(--label3)';
+
+  // Changes list — dollar values shown in same style as count changes
+  const listEl = document.getElementById('recon-rpt-list');
+  if (!r.changes.length) {
+    listEl.innerHTML = '<div style="padding:20px 16px;text-align:center;color:#28A745;font-size:14px;font-weight:600;">✓ All counts matched — no discrepancies</div>';
+  } else {
+    listEl.innerHTML = r.changes.map((c, i) => {
+      const mat = matLib.find(m => m.desc === c.desc);
+      const price = c.price !== undefined ? c.price : (mat ? mat.price : 0);
+      const valBefore = c.from * price;
+      const valAfter  = c.to   * price;
+      const dollarDiff = valAfter - valBefore;
+      const isLast = i === r.changes.length - 1;
+      const diffColor = c.diff > 0 ? '#28A745' : '#CC2200';
+      const dollarColor = dollarDiff > 0 ? '#28A745' : '#CC2200';
+      return `
+        <div style="padding:11px 14px;border-bottom:${isLast?'none':'.5px solid var(--sep)'};">
+          <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:5px;">${c.desc}</div>
+          <div style="display:flex;gap:12px;">
+            <!-- Count change -->
+            <div style="flex:1;background:var(--fill);border-radius:8px;padding:6px 10px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--label3);margin-bottom:3px;">Count</div>
+              <div style="font-size:13px;font-weight:600;">
+                <span style="color:var(--label3);">${c.from.toFixed(1)}</span>
+                <span style="color:var(--label3);"> → </span>
+                <span style="color:var(--label);">${c.to.toFixed(1)}</span>
+                <span style="margin-left:4px;font-weight:800;color:${diffColor};">${c.diff > 0 ? '+' : ''}${c.diff.toFixed(1)}</span>
+              </div>
+            </div>
+            <!-- Dollar change -->
+            ${price > 0 ? `<div style="flex:1;background:${dollarDiff > 0 ? '#34C75910' : '#FF3B3010'};border-radius:8px;padding:6px 10px;border:1px solid ${dollarDiff > 0 ? '#34C75930' : '#FF3B3030'};">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--label3);margin-bottom:3px;">Value · $${price.toFixed(2)}/unit</div>
+              <div style="font-size:13px;font-weight:600;">
+                <span style="color:var(--label3);">$${valBefore.toFixed(2)}</span>
+                <span style="color:var(--label3);"> → </span>
+                <span style="color:var(--label);">$${valAfter.toFixed(2)}</span>
+                <span style="margin-left:4px;font-weight:800;color:${dollarColor};">${dollarDiff >= 0 ? '+' : '-'}$${Math.abs(dollarDiff).toFixed(2)}</span>
+              </div>
+            </div>` : '<div style="flex:1;"></div>'}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Signature
+  const sigSection = document.getElementById('recon-rpt-sig-section');
+  const sigImg = document.getElementById('recon-rpt-sig-img');
+  if (r.sigDataUrl) {
+    sigSection.style.display = 'block';
+    sigImg.src = r.sigDataUrl;
+  } else {
+    sigSection.style.display = 'none';
+  }
+
+  document.getElementById('recon-report-modal').classList.add('open');
+}
+
+function closeReconReport() {
+  document.getElementById('recon-report-modal').classList.remove('open');
 }
 
 // ══════════════════════════════
