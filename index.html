@@ -1223,11 +1223,21 @@
       </div>
 
       <!-- Signature -->
-      <div style="padding:0 16px 16px;" id="recon-rpt-sig-section" style="display:none;">
+      <div style="padding:0 16px 16px; display:none;" id="recon-rpt-sig-section">
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--label3);margin-bottom:8px;">Signature</div>
         <div style="background:var(--bg2);border-radius:12px;padding:12px;border:.5px solid var(--sep);text-align:center;">
           <img id="recon-rpt-sig-img" src="" style="max-width:100%;max-height:100px;object-fit:contain;display:block;margin:0 auto;">
         </div>
+      </div>
+
+      <!-- Export buttons -->
+      <div style="padding:0 16px 20px;display:flex;gap:10px;">
+        <button onclick="exportReconExcel()" style="flex:1;background:#1D6F42;color:#fff;border:none;border-radius:12px;padding:13px 8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+          📊 Export Excel
+        </button>
+        <button onclick="exportReconGoogleSheets()" id="recon-gs-btn" style="flex:1;background:#4285F4;color:#fff;border:none;border-radius:12px;padding:13px 8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+          🟢 Google Sheets
+        </button>
       </div>
 
     </div>
@@ -1290,230 +1300,330 @@ const CAT_EMOJIS = { FLOOR:'🪵', WALLS:'🧱', ROOF:'🏠', 'DOOR HARDWARE':'�
 
 // Material library — master list of all known materials
 let matLib = [
-  { id: 'm1', desc: "4x6 - 16' Notched 4x6 Runners", price: 23.04, category: "FLOOR" },
-  { id: 'm2', desc: "4x6 - 12' Notched 4x6 Runners", price: 17.28, category: "FLOOR" },
-  { id: 'm3', desc: "2x6x192 - Pressure Treated", price: 7.40, category: "FLOOR" },
-  { id: 'm4', desc: "2X6X93 - Pressure Treated", price: 3.60, category: "FLOOR" },
-  { id: 'm5', desc: "2x6x144\" (12')", price: 6.58, category: "FLOOR" },
-  { id: 'm6', desc: "2x4x93 - Pressure Treated", price: 2.35, category: "FLOOR" },
-  { id: 'm7', desc: "4x8 - LP Perfomax 3/4\"", price: 34.27, category: "FLOOR" },
-  { id: 'm8', desc: "2\" x .092 HDG (Roll - 300 pcs)", price: 2.57, category: "FLOOR" },
-  { id: 'm9', desc: "3\" x .120 HDG (Roll - 450 pcs)", price: 3.42, category: "FLOOR" },
-  { id: 'm10', desc: "6\" Pullboard Spax Screws (1 piece)", price: 0.47, category: "FLOOR" },
-  { id: 'm11', desc: "2x4x192\" (16')", price: 5.50, category: "WALLS" },
-  { id: 'm12', desc: "2x4x72\" (6')", price: 3.20, category: "WALLS" },
-  { id: 'm13', desc: "2x4x120\" (10')", price: 4.02, category: "WALLS" },
-  { id: 'm14', desc: "2x4x144\" (12')", price: 4.32, category: "WALLS" },
-  { id: 'm15', desc: "Staples 3608PG-10M (1\" Gauge)", price: 0.50, category: "WALLS" },
-  { id: 'm16', desc: "LP SmartSiding 3/8 8\" OC", price: 29.79, category: "WALLS" },
-  { id: 'm17', desc: "3x4 Truss Assembly Plates", price: 0.25, category: "ROOF" },
-  { id: 'm18', desc: "4\" SDWC Hurricane Screws (1 piece)", price: 0.49, category: "ROOF" },
-  { id: 'm19', desc: "OSB 7/16\"", price: 10.80, category: "ROOF" },
-  { id: 'm20', desc: "Door Hinges", price: 1.45, category: "DOOR HARDWARE" },
-  { id: 'm21', desc: "D HANDLES", price: 1.26, category: "DOOR HARDWARE" },
-  { id: 'm22', desc: "T-Handles (Short)", price: 3.05, category: "DOOR HARDWARE" },
-  { id: 'm23', desc: "3/4\" Hinge Screws (piece)", price: 0.02, category: "DOOR HARDWARE" },
-  { id: 'm24', desc: "2\" Hinge Screws (piece)", price: 0.03, category: "DOOR HARDWARE" },
-  { id: 'm25', desc: "4' Diamond Plate Threshold", price: 6.40, category: "DOOR HARDWARE" },
-  { id: 'm26', desc: "3/4\" Zinc Screws (piece)", price: 0.01, category: "DOOR HARDWARE" },
-  { id: 'm27', desc: "Door Bumpers", price: 0.24, category: "DOOR HARDWARE" },
-  { id: 'm28', desc: "LP 190 Series Trim 1x4x16", price: 9.15, category: "TRIM" },
-  { id: 'm29', desc: "Trim Nails (100 pcs)", price: 0.51, category: "TRIM" },
-  { id: 'm30', desc: "36\" - Metal Ag Panel (Hips)", price: 8.22, category: "METAL" },
-  { id: 'm31', desc: "8.6 ft Metal Rake", price: 13.77, category: "METAL" },
-  { id: 'm32', desc: "12.6 ft Metal Rake", price: 20.25, category: "METAL" },
-  { id: 'm33', desc: "12.5 ft Metal Ridge Cap", price: 14.99, category: "METAL" },
-  { id: 'm34', desc: "1\" Roofing Screws - Bag 100 pcs", price: 6.42, category: "METAL" },
-  { id: 'm35', desc: "Roofing Felt (sq ft)", price: 0.07, category: "METAL" },
-  { id: 'm36', desc: "1-1/2\" Roofing Screws - Bag 100pcs", price: 7.10, category: "METAL" },
-  { id: 'm37', desc: "Gable Vents", price: 9.50, category: "METAL" },
-  { id: 'm38', desc: "PPG Paint (Gal)", price: 20.28, category: "PAINT" },
-  { id: 'm39', desc: "White Caulk", price: 1.90, category: "PAINT" },
-  { id: 'm40', desc: "Clear Silicone", price: 9.25, category: "PAINT" },
-  { id: 'm41', desc: "Touch Up Cans", price: 1.83, category: "PAINT" },
-  // 10-wide new materials
-  { id: 'm42', desc: "4x6 - 20' Notched 4x6 Runners", price: 32.00, category: "FLOOR" },
-  { id: 'm43', desc: "2x6x117 - Pressure Treated", price: 4.55, category: "FLOOR" },
-  { id: 'm44', desc: "2x6x144 - Pressure Treated", price: 5.30, category: "FLOOR" },
-  { id: 'm45', desc: "51\" - Metal Ag Panel (10L)", price: 11.65, category: "METAL" },
-  { id: 'm46', desc: "10.6 ft Metal Rake", price: 16.17, category: "METAL" },
-  { id: 'm47', desc: "Heavy Duty Latches (Barrel Plunger)", price: 2.38, category: "DOOR HARDWARE" },
-  { id: 'm48', desc: "6' Diamond Plate Threshold", price: 6.92, category: "DOOR HARDWARE" },
-  { id: 'm49', desc: "SilverTech LP SmartSiding 3/8 8\" OC", price: 38.43, category: "WALLS" },
-  { id: 'm50', desc: "TechShield OSB 7/16\"", price: 16.99, category: "ROOF" },
-
-  // ── PAINT / URETHANE / SUPPLIES ──
-  { id: 'm51', desc: "PPG - Urethane/gallon", price: 47.58, category: "PAINT", vendor: "PPG" },
-  { id: 'm52', desc: "Sherwin Williams Paint (Gal)", price: 23.21, category: "PAINT", vendor: "Sherwin Williams" },
-  { id: 'm53', desc: "SW - Urethane (Gal)", price: 56.00, category: "PAINT", vendor: "Sherwin Williams" },
-  { id: 'm54', desc: "Paint Rags (Box)", price: 31.99, category: "PAINT", vendor: "PPG" },
-  { id: 'm55', desc: "Painters Tape - 1 Roll", price: 3.84, category: "PAINT", vendor: "PPG" },
-  { id: 'm56', desc: "Chip Brushes", price: 0.89, category: "PAINT", vendor: "PPG" },
-  { id: 'm57', desc: "Roller Nap 4 in.", price: 2.12, category: "PAINT", vendor: "Amazon" },
-  { id: 'm58', desc: "Roller Nap 9 in.", price: 1.95, category: "PAINT", vendor: "Amazon" },
-  { id: 'm59', desc: "Spray Bonding Agent", price: 9.00, category: "PAINT", vendor: "Lowe's" },
-
-  // ── WHITEWOOD LUMBER ──
-  { id: 'm60', desc: "2x4x69\"", price: 2.75, category: "WALLS", vendor: "Union Grove Lumber" },
-  { id: 'm61', desc: "2x4x84\" (7')", price: 3.14, category: "WALLS", vendor: "Union Grove Lumber" },
-  { id: 'm62', desc: "2x6x144\" (12')", price: 6.58, category: "WALLS", vendor: "Union Grove Lumber" },
-  { id: 'm63', desc: "2x6x192 (16')", price: 7.40, category: "WALLS", vendor: "Union Grove Lumber" },
-  { id: 'm64', desc: "2x6x168\" (14')", price: 7.43, category: "WALLS", vendor: "Union Grove Lumber" },
-  { id: 'm65', desc: "2X8X144' (12')", price: 11.91, category: "WALLS", vendor: "Union Grove Lumber" },
-  { id: 'm66', desc: "2x8x192\" (16')", price: 14.82, category: "WALLS", vendor: "Union Grove Lumber" },
-
-  // ── PRESSURE TREATED (additional sizes) ──
-  { id: 'm67', desc: "2x4x117 - Pressure Treated", price: 3.33, category: "FLOOR", vendor: "C & T" },
-  { id: 'm68', desc: "2x4x130 - Pressure Treated", price: 5.25, category: "FLOOR", vendor: "C & T" },
-  { id: 'm69', desc: "2x4x192 - Pressure Treated", price: 10.48, category: "FLOOR", vendor: "C & T" },
-  { id: 'm70', desc: "2x4x96 - Pressure Treated", price: 2.67, category: "FLOOR", vendor: "C & T" },
-  { id: 'm71', desc: "2x4x144 - Pressure Treated", price: 7.20, category: "FLOOR", vendor: "C & T" },
-  { id: 'm72', desc: "2x6x130 - Pressure Treated", price: 5.50, category: "FLOOR", vendor: "C & T" },
-  { id: 'm73', desc: "2x6x165 - Pressure Treated", price: 6.20, category: "FLOOR", vendor: "C & T" },
-  { id: 'm74', desc: "4x6 Pressure Treated Posts", price: 15.17, category: "FLOOR", vendor: "C & T" },
-
-  // ── FLOORING / SIDING (additional) ──
-  { id: 'm75', desc: "4x8 - LP PREMIUM 3/4\"", price: 31.09, category: "FLOOR", vendor: "Home Depot" },
-  { id: 'm76', desc: "3/4\" Prostruct Shed Floor", price: 34.80, category: "FLOOR" },
-  { id: 'm77', desc: "LP Lap 3/8 8\"", price: 8.89, category: "WALLS", vendor: "Colonial Forest Products" },
-  { id: 'm78', desc: "4x8 - LP PERformax 3/4\" PISO", price: 36.74, category: "FLOOR", vendor: "Lumberman" },
-
-  // ── ROOF / METAL (additional panels & trim) ──
-  { id: 'm79', desc: "14.6 ft Metal Rake", price: 23.49, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm80', desc: "10.6 ft Metal Ridge Cap", price: 16.17, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm81', desc: "16.6 ft Metal Ridge Cap", price: 26.73, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm82', desc: "12.5 ft Facade Trim", price: 15.00, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm83', desc: "57\" - Metal Ag Panel (12L & 8U)", price: 13.01, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm84', desc: "71\" - Metal Ag Panel (10U)", price: 16.21, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm85', desc: "77\" - Metal Ag Panel (14L & 12U)", price: 16.49, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm86', desc: "98\" - Metal Ag Panel (14U)", price: 22.38, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm87', desc: "117\" - Metal Ag Panel", price: 25.89, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm88', desc: "140\" - Metal Ag Panel", price: 27.65, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm89', desc: "153\" - Metal Ag Panel", price: 30.22, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm90', desc: "188\" - Metal Ag Panel", price: 37.13, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm91', desc: "101\" Metal Ag Panel", price: 23.05, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm92', desc: "7/8\" Roofing Nails (Roll 120 pcs)", price: 0.82, category: "METAL", vendor: "Southern Carlson" },
-  { id: 'm93', desc: "Staples (Felt) 100pcs", price: 0.26, category: "METAL", vendor: "Southern Carlson" },
-  { id: 'm94', desc: "Side Wall Flashing 12'", price: 20.75, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm95', desc: "End Wall Flashing 12'", price: 9.59, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm96', desc: "End Wall Flashing 8'", price: 6.52, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm97', desc: "Charcoal Architectural Shingles", price: 36.50, category: "ROOF", vendor: "Beacon Building Products" },
-  { id: 'm98', desc: "Charcoal 3-Tab Shingles", price: 28.00, category: "ROOF", vendor: "Beacon Building Products" },
-  { id: 'm99', desc: "White Drip Edge", price: 2.95, category: "METAL", vendor: "MIDCO" },
-  { id: 'm100', desc: "Brown Drip Edge", price: 2.95, category: "METAL", vendor: "MIDCO" },
-  { id: 'm101', desc: "Black Drip Edge", price: 2.27, category: "METAL", vendor: "MIDCO" },
-  { id: 'm102', desc: "14 ft Metal Rake", price: 15.37, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm103', desc: "Corner Trim @ 76\"", price: 4.07, category: "METAL", vendor: "Steelcraft" },
-
-  // ── NAILS / SCREWS / FASTENERS (additional) ──
-  { id: 'm104', desc: "1.5\" x .092 HDG (Roll - 300 pcs)", price: 2.40, category: "FLOOR" },
-  { id: 'm105', desc: "1/2\" Plastic Staples (50 pcs)", price: 1.14, category: "WALLS", vendor: "Southern Carlson" },
-  { id: 'm106', desc: "6\" SDWC Hurricane Screws (1 piece)", price: 0.57, category: "ROOF", vendor: "Southern Carlson" },
-  { id: 'm107', desc: "4\" Pullboard Spax Screws (1 piece)", price: 0.38, category: "FLOOR" },
-  { id: 'm108', desc: "Decking Screws (1,750 pcs)", price: 0.07, category: "FLOOR", vendor: "Southern Carlson" },
-  { id: 'm109', desc: "Post Brackets", price: 0.90, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm110', desc: "Hurricane Ties", price: 0.98, category: "ROOF", vendor: "Lowe's" },
-
-  // ── DOORS & THRESHOLDS ──
-  { id: 'm111', desc: "Tall LH Solid In-Swing Door", price: 202.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm112', desc: "Short RH Solid In-Swing Door", price: 175.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm113', desc: "Short LH Solid In-Swing Door", price: 175.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm114', desc: "Short RH 9 Lite In-Swing Door", price: 211.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm115', desc: "Short LH 9 Lite In-Swing Door", price: 211.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm116', desc: "Tall RH 9 Lite In-Swing Door", price: 211.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm117', desc: "Short RH 6P Out-Swing Door", price: 190.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm118', desc: "9x7 Garage Door", price: 453.26, category: "DOOR HARDWARE", vendor: "Betco" },
-  { id: 'm119', desc: "8x7 Garage Door", price: 421.84, category: "DOOR HARDWARE", vendor: "Betco" },
-  { id: 'm120', desc: "6x7 Garage Door", price: 344.48, category: "DOOR HARDWARE", vendor: "Betco" },
-  { id: 'm121', desc: "6x6 Garage Door", price: 329.14, category: "DOOR HARDWARE", vendor: "Betco" },
-  { id: 'm122', desc: "6x7 Garage Threshold", price: 22.80, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm123', desc: "8x7 Garage Threshold", price: 26.75, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm124', desc: "9x7 Garage Threshold", price: 32.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm125', desc: "T-Handles (Long)", price: 3.55, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm126', desc: "Fiberglass Door Knobs", price: 10.00, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm127', desc: "Screen Door Spring Kit", price: 2.07, category: "DOOR HARDWARE", vendor: "Apple Outdoor Supply" },
-
-  // ── WINDOWS ──
-  { id: 'm128', desc: "10x24 White Transom", price: 19.91, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm129', desc: "10x24 Brown Transom", price: 19.91, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm130', desc: "10x29 White Transom", price: 16.99, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm131', desc: "10x29 Brown Transom", price: 17.99, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm132', desc: "10x40 White Transom", price: 35.49, category: "DOOR HARDWARE", vendor: "Apple Outdoor Supply" },
-  { id: 'm133', desc: "10x40 Brown Transom", price: 35.49, category: "DOOR HARDWARE", vendor: "Apple Outdoor Supply" },
-  { id: 'm134', desc: "2x3 Double Hung Insulated Window", price: 84.90, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm135', desc: "3x3 Double Hung Insulated Window", price: 103.14, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm136', desc: "2x3 Window White", price: 27.49, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm137', desc: "2x3 Window Brown", price: 32.35, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm138', desc: "3x3 Window White", price: 40.15, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm139', desc: "3x3 Window Brown", price: 46.80, category: "DOOR HARDWARE", vendor: "MIDCO" },
-  { id: 'm140', desc: "PREMIUM Vent", price: 1.08, category: "METAL", vendor: "Apple Outdoor Supply" },
-  { id: 'm141', desc: "SilverTech Tape (linear ft)", price: 0.12, category: "WALLS", vendor: "Home Depot" },
-
-  // ── ELECTRICAL ──
-  { id: 'm142', desc: "60W Light Bulb", price: 1.54, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm143', desc: "1000 ft. 14/2 15A Wire (linear ft)", price: 0.36, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm144', desc: "15A 1-Pole Breakers", price: 6.68, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm145', desc: "15A Duplex Outlet", price: 1.41, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm146', desc: "15A Light Switch", price: 1.10, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm147', desc: "1G 18 CU Blue Boxes (Light Switches)", price: 2.22, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm148', desc: "1G 20 CU Blue Boxes (Receptacles)", price: 2.57, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm149', desc: "1G 20 CU Blue Round Boxes (Lights)", price: 1.00, category: "ELECTRICAL", vendor: "Home Depot" },
-  { id: 'm150', desc: "30A 125/250V Grounding Plug", price: 5.36, category: "ELECTRICAL", vendor: "Lowe's" },
-  { id: 'm151', desc: "30A 125/250V Locking Connector", price: 12.58, category: "ELECTRICAL", vendor: "Home Depot" },
-  { id: 'm152', desc: "452 Red Wing Nut Wire Connector (Packs)", price: 0.22, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm153', desc: "Light Switch Wall Plate", price: 0.46, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm154', desc: "Outlet Wall Plate", price: 0.35, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm155', desc: "Circuit Breaker Load Center", price: 37.30, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm156', desc: "1/2\" Romex Connectors", price: 0.48, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm157', desc: "15A 125V Hinged Plugs", price: 6.42, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm158', desc: "Grounding Bar Kits", price: 10.48, category: "ELECTRICAL", vendor: "CED" },
-  { id: 'm159', desc: "Plastic Keyless Lamp Holder", price: 1.71, category: "ELECTRICAL", vendor: "CED" },
-
-  // ── BULLETS (Steel Buildings) ──
-  { id: 'm160', desc: "10' Panel - Back Wall", price: 25.70, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm161', desc: "12' Panel - Side Wall", price: 30.84, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm162', desc: "16' Panel - Side Wall", price: 41.12, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm163', desc: "18'5\" Panel - Front Wall", price: 47.33, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm164', desc: "20' Panel - Side Wall", price: 51.40, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm165', desc: "24\" Panel - Front Wall", price: 5.14, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm166', desc: "24' Panel - Side Wall", price: 61.68, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm167', desc: "28' Panel - Side Wall", price: 71.96, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm168', desc: "133\" Panel - Back Wall", price: 28.48, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm169', desc: "144\" Panel", price: 30.84, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm170', desc: "70\" Panel", price: 14.99, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm171', desc: "6'6\" L Corner Trim 3x3", price: 5.68, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm172', desc: "6'6\" Garage Door Post Trim", price: 5.68, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm173', desc: "6'3\" Overhead Trim", price: 7.50, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm174', desc: "8'3\" Overhead Trim", price: 8.75, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm175', desc: "8'6\" Garage Door Post Trim", price: 7.43, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm176', desc: "12'6\" Eave Trim", price: 13.25, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm177', desc: "Overhead Door Trim @ 6'3\"", price: 7.56, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm178', desc: "Post Trim @ 6'", price: 5.51, category: "METAL", vendor: "Steelcraft" },
-  { id: 'm179', desc: "Gable Trim @ 12'", price: 26.18, category: "METAL", vendor: "Steelcraft" },
-
-  // ── TRUSSES ──
-  { id: 'm180', desc: "8' - Truss Lofted", price: 16.61, category: "ROOF" },
-  { id: 'm181', desc: "8' - Truss Utility", price: 14.00, category: "ROOF" },
-  { id: 'm182', desc: "10' - Bullet Truss", price: 14.00, category: "ROOF" },
-  { id: 'm183', desc: "10' - Truss Lofted", price: 16.61, category: "ROOF" },
-  { id: 'm184', desc: "10' - Truss Utility", price: 14.00, category: "ROOF" },
-  { id: 'm185', desc: "12' - Truss Lofted", price: 21.00, category: "ROOF" },
-  { id: 'm186', desc: "12' - Truss Utility", price: 18.00, category: "ROOF" },
-  { id: 'm187', desc: "14' - Truss Lofted", price: 26.00, category: "ROOF" },
-  { id: 'm188', desc: "14' - Truss Utility", price: 22.00, category: "ROOF" },
-
-  // ── DECKING / RAILING ──
-  { id: 'm189', desc: "Decking (Sq. ft)", price: 3.68, category: "FLOOR", vendor: "Kauffman's" },
-  { id: 'm190', desc: "K-Rail (Lineal Ft)", price: 8.95, category: "FLOOR" },
-  { id: 'm191', desc: "K-Rail Bracket", price: 1.50, category: "FLOOR" },
-  { id: 'm192', desc: "K-Rail Center Support", price: 1.25, category: "FLOOR" },
-  { id: 'm193', desc: "Black Aluminum Rail (Lineal Ft)", price: 16.00, category: "FLOOR" },
-  { id: 'm194', desc: "Veranda White Railing (Lineal Ft)", price: 12.87, category: "FLOOR" },
-  { id: 'm195', desc: "Veranda White Bracket (4 pcs)", price: 11.25, category: "FLOOR" },
-  { id: 'm196', desc: "4x6 Ramp", price: 40.00, category: "FLOOR" },
-  { id: 'm197', desc: "6x6 Ramp", price: 50.40, category: "FLOOR" },
+  { id:'m200', desc:"ProStruct 3/4\" Flooring", price:34.97, category:"FLOOR" },
+  { id:'m201', desc:"TechShield OSB 7/16\"", price:17.53, category:"FLOOR" },
+  { id:'m202', desc:"OSB 7/16\"", price:9.27, category:"FLOOR" },
+  { id:'m203', desc:"Acacia T&G 5/8\"", price:0.0, category:"FLOOR" },
+  { id:'m204', desc:"SilverTech LP SmartSiding 3/8 8\" OC", price:42.0, category:"WALLS" },
+  { id:'m205', desc:"LP Lap 3/8 8\" OC (Elite 16ft)", price:9.6, category:"WALLS" },
+  { id:'m206', desc:"LP SmartSiding 3/8 8\" OC", price:29.6, category:"WALLS" },
+  { id:'m207', desc:"LP 190 Series Trim 1x4x16", price:9.45, category:"TRIM" },
+  { id:'m208', desc:"Farmhouse B&B Siding", price:0.0, category:"WALLS" },
+  { id:'m209', desc:"Phantom Shadow Stone", price:119.47, category:"WALLS" },
+  { id:'m210', desc:"Morning Aspen Stone", price:119.47, category:"WALLS" },
+  { id:'m211', desc:"2x4x69\" (Craftsman)", price:0.0, category:"WALLS" },
+  { id:'m212', desc:"2x4x72\" (6')", price:3.34, category:"WALLS" },
+  { id:'m213', desc:"2x4x84\" (7')", price:3.55, category:"WALLS" },
+  { id:'m214', desc:"2x4x120\" (10')", price:4.53, category:"WALLS" },
+  { id:'m215', desc:"2x4x144\" (12')", price:4.92, category:"WALLS" },
+  { id:'m216', desc:"2x4x192\" (16')", price:8.16, category:"WALLS" },
+  { id:'m217', desc:"2x6x144\" (12')", price:8.27, category:"WALLS" },
+  { id:'m218', desc:"2x6x168\" (14')", price:8.68, category:"WALLS" },
+  { id:'m219', desc:"2x6x192\" (16')", price:12.57, category:"WALLS" },
+  { id:'m220', desc:"4x6 - 8' Notched 4x6 Runners", price:0.0, category:"FLOOR" },
+  { id:'m221', desc:"4x6 - 12' Notched 4x6 Runners", price:18.6, category:"FLOOR" },
+  { id:'m222', desc:"4x6 - 16' Notched 4x6 Runners", price:24.8, category:"FLOOR" },
+  { id:'m223', desc:"4x6 - 20' Notched 4x6 Runners", price:34.0, category:"FLOOR" },
+  { id:'m224', desc:"2x4x93\" - Pressure Treated", price:3.89, category:"FLOOR" },
+  { id:'m225', desc:"2x4x117\" - Pressure Treated", price:0.0, category:"FLOOR" },
+  { id:'m226', desc:"2x4x130\" - Pressure Treated", price:0.0, category:"FLOOR" },
+  { id:'m227', desc:"2x4x192\" - Pressure Treated", price:8.68, category:"FLOOR" },
+  { id:'m228', desc:"2x6x117\" - Pressure Treated", price:6.83, category:"FLOOR" },
+  { id:'m229', desc:"2x6x130\" - Pressure Treated", price:7.76, category:"FLOOR" },
+  { id:'m230', desc:"2x6x144\" - Pressure Treated", price:8.1, category:"FLOOR" },
+  { id:'m231', desc:"2x6x154\" - Pressure Treated", price:9.11, category:"FLOOR" },
+  { id:'m232', desc:"2x6x192\" (16') - Pressure Treated", price:11.09, category:"FLOOR" },
+  { id:'m233', desc:"Decking (12') - Salt Water", price:20.28, category:"FLOOR" },
+  { id:'m234', desc:"Decking (16') - Salt Water", price:27.04, category:"FLOOR" },
+  { id:'m235', desc:"Decking (16') - Sand Bar", price:27.04, category:"FLOOR" },
+  { id:'m236', desc:"3\" x .120 HDG (Roll - 450 pcs)", price:0.02, category:"FLOOR" },
+  { id:'m237', desc:"2\" x .092 HDG (Roll - 300 pcs)", price:0.01, category:"FLOOR" },
+  { id:'m238', desc:"1-1/2\" x .092 HDG", price:0.01, category:"FLOOR" },
+  { id:'m239', desc:"6\" CTX156 Lag Screws", price:0.53, category:"FLOOR" },
+  { id:'m240', desc:"5\" CTX155 Lag Screws", price:0.45, category:"FLOOR" },
+  { id:'m241', desc:"2\" CTX Lag Screws (Box/700)", price:0.04, category:"FLOOR" },
+  { id:'m242', desc:"Decking Screws - Gray", price:0.08, category:"FLOOR" },
+  { id:'m243', desc:"Decking Screws - Brown", price:0.08, category:"FLOOR" },
+  { id:'m244', desc:"Staples 1\" Crown x 1\" Leg 16ga (10,000/box)", price:0.01, category:"FLOOR" },
+  { id:'m245', desc:"Trim Nails (100 pcs)", price:0.01, category:"TRIM" },
+  { id:'m246', desc:"1-1/2\" Finish Nails 16ga", price:0.01, category:"TRIM" },
+  { id:'m247', desc:"3/4\" Hinge Screws (piece)", price:0.02, category:"DOOR HARDWARE" },
+  { id:'m248', desc:"2\" Hinge Screws (piece)", price:0.03, category:"DOOR HARDWARE" },
+  { id:'m249', desc:"2-1/2\" Hinge Screws (Magnets)", price:0.05, category:"DOOR HARDWARE" },
+  { id:'m250', desc:"3/4\" Zinc Screws (piece)", price:0.01, category:"DOOR HARDWARE" },
+  { id:'m251', desc:"3-1/2\" CTX Lag Screws", price:0.35, category:"FLOOR" },
+  { id:'m252', desc:"7/8\" x .120 EG Roofing Nails", price:0.004, category:"ROOF" },
+  { id:'m253', desc:"Arrow T50 3/8\" Staples (Felt)", price:0.002, category:"ROOF" },
+  { id:'m254', desc:"Black Roofing Felt", price:26.21, category:"ROOF" },
+  { id:'m255', desc:"20' Ridge Vent - Metal Roof", price:48.81, category:"ROOF" },
+  { id:'m256', desc:"4' Ridge Vent - Shingle Roof", price:10.3, category:"ROOF" },
+  { id:'m257', desc:"Charcoal Architectural Shingles", price:33.99, category:"ROOF" },
+  { id:'m258', desc:"Charcoal 3-Tab Shingles", price:32.0, category:"ROOF" },
+  { id:'m259', desc:"Weathered Wood Architectural Shingles", price:33.99, category:"ROOF" },
+  { id:'m260', desc:"Weathered Gray 3-Tab Shingles", price:32.0, category:"ROOF" },
+  { id:'m261', desc:"Hickory Architectural Shingles", price:33.9, category:"ROOF" },
+  { id:'m262', desc:"Hickory 3-Tab / Ridge Cap", price:50.1, category:"ROOF" },
+  { id:'m263', desc:"Slate Architectural Shingles", price:33.99, category:"ROOF" },
+  { id:'m264', desc:"Slate 3-Tab Shingles", price:50.1, category:"ROOF" },
+  { id:'m265', desc:"Brakwood Architectural Shingles", price:33.99, category:"ROOF" },
+  { id:'m266', desc:"Shakewood Architectural Shingles", price:33.99, category:"ROOF" },
+  { id:'m267', desc:"Pewter Gray Architectural Shingles", price:33.99, category:"ROOF" },
+  { id:'m268', desc:"Pewter Gray 3-Tab Shingles", price:50.1, category:"ROOF" },
+  { id:'m269', desc:"Post Brackets", price:3.05, category:"TRIM" },
+  { id:'m270', desc:"White Railings 8'", price:102.34, category:"TRIM" },
+  { id:'m271', desc:"White Railing Brackets", price:11.25, category:"TRIM" },
+  { id:'m272', desc:"Black Railings 8'", price:156.86, category:"TRIM" },
+  { id:'m273', desc:"Black Railing Brackets", price:35.49, category:"TRIM" },
+  { id:'m274', desc:"10' Starter Strip", price:0.0, category:"WALLS" },
+  { id:'m275', desc:"White J-Channel", price:0.0, category:"WALLS" },
+  { id:'m276', desc:"9'x150' House Wrap", price:0.0, category:"WALLS" },
+  { id:'m277', desc:"White Corner Trim", price:0.0, category:"TRIM" },
+  { id:'m278', desc:"1x8x12' Pine Boards", price:0.0, category:"WALLS" },
+  { id:'m279', desc:"Hickman Coast Laminate Flooring", price:0.0, category:"FLOOR" },
+  { id:'m280', desc:"Underlayment", price:0.0, category:"FLOOR" },
+  { id:'m281', desc:"Solid Short Door Right Hand In Swing", price:204.0, category:"DOOR HARDWARE" },
+  { id:'m282', desc:"Solid Short Door Left Hand In Swing", price:204.0, category:"DOOR HARDWARE" },
+  { id:'m283', desc:"Solid Tall Door Right Hand In Swing", price:204.0, category:"DOOR HARDWARE" },
+  { id:'m284', desc:"Solid Tall Door Left Hand In Swing", price:204.0, category:"DOOR HARDWARE" },
+  { id:'m285', desc:"9 Lite Short Door Right Hand In Swing", price:240.0, category:"DOOR HARDWARE" },
+  { id:'m286', desc:"9 Lite Short Door Left Hand In Swing", price:240.0, category:"DOOR HARDWARE" },
+  { id:'m287', desc:"9 Lite Tall Door Right Hand In Swing", price:240.0, category:"DOOR HARDWARE" },
+  { id:'m288', desc:"9 Lite Tall Door Left Hand In Swing", price:240.0, category:"DOOR HARDWARE" },
+  { id:'m289', desc:"15 Lite Tall Door Left Hand In Swing", price:292.0, category:"DOOR HARDWARE" },
+  { id:'m290', desc:"15 Lite Short Door Left Hand In Swing", price:292.0, category:"DOOR HARDWARE" },
+  { id:'m291', desc:"15 Lite Tall Door Right Hand In Swing", price:292.0, category:"DOOR HARDWARE" },
+  { id:'m292', desc:"15 Lite Short Door Right Hand In Swing", price:292.0, category:"DOOR HARDWARE" },
+  { id:'m293', desc:"Full Lite Tall Door Left Hand In Swing", price:313.0, category:"DOOR HARDWARE" },
+  { id:'m294', desc:"Full Lite Short Door Left Hand In Swing", price:313.0, category:"DOOR HARDWARE" },
+  { id:'m295', desc:"Full Lite Tall Door Right Hand In Swing", price:313.0, category:"DOOR HARDWARE" },
+  { id:'m296', desc:"Full Lite Short Door Right Hand In Swing", price:313.0, category:"DOOR HARDWARE" },
+  { id:'m297', desc:"9 Lite Tall French Right Active In Swing", price:559.0, category:"DOOR HARDWARE" },
+  { id:'m298', desc:"9 Lite Short French In Swing", price:559.0, category:"DOOR HARDWARE" },
+  { id:'m299', desc:"9 Lite Tall French Out Swing", price:569.0, category:"DOOR HARDWARE" },
+  { id:'m300', desc:"9 Lite Short French Out Swing", price:569.0, category:"DOOR HARDWARE" },
+  { id:'m301', desc:"Solid Tall French Door Out Swing", price:497.0, category:"DOOR HARDWARE" },
+  { id:'m302', desc:"Solid Short French Door Out Swing", price:497.0, category:"DOOR HARDWARE" },
+  { id:'m303', desc:"Solid Tall French Door In Swing", price:465.0, category:"DOOR HARDWARE" },
+  { id:'m304', desc:"Solid Short French Door In Swing", price:465.0, category:"DOOR HARDWARE" },
+  { id:'m305', desc:"15 Lite Tall French Door In Swing", price:641.0, category:"DOOR HARDWARE" },
+  { id:'m306', desc:"15 Lite Short French Door Right Active In Swing", price:641.0, category:"DOOR HARDWARE" },
+  { id:'m307', desc:"15 Lite Tall French Door Right Active Out Swing", price:673.0, category:"DOOR HARDWARE" },
+  { id:'m308', desc:"15 Lite Short French Door Right Active Out Swing", price:673.0, category:"DOOR HARDWARE" },
+  { id:'m309', desc:"Full Lite Tall French Door Right Active Out Swing", price:715.0, category:"DOOR HARDWARE" },
+  { id:'m310', desc:"Full Lite Short French Door Right Active Out Swing", price:715.0, category:"DOOR HARDWARE" },
+  { id:'m311', desc:"Full Lite Tall French Door Right Active In Swing", price:683.0, category:"DOOR HARDWARE" },
+  { id:'m312', desc:"Full Lite Short French Door Right Active In Swing", price:683.0, category:"DOOR HARDWARE" },
+  { id:'m313', desc:"Sill Pans", price:8.66, category:"DOOR HARDWARE" },
+  { id:'m314', desc:"French Sill Pan", price:9.0, category:"DOOR HARDWARE" },
+  { id:'m315', desc:"9x7 Rollup Garage Door", price:370.32, category:"DOOR HARDWARE" },
+  { id:'m316', desc:"8x7 Rollup Garage Door", price:344.64, category:"DOOR HARDWARE" },
+  { id:'m317', desc:"6x7 Rollup Garage Door", price:281.44, category:"DOOR HARDWARE" },
+  { id:'m318', desc:"6x6 Rollup Garage Door", price:268.91, category:"DOOR HARDWARE" },
+  { id:'m319', desc:"6' Rails (Pair)", price:0.0, category:"DOOR HARDWARE" },
+  { id:'m320', desc:"9x7 Black Rollup Garage Door", price:370.32, category:"DOOR HARDWARE" },
+  { id:'m321', desc:"8x7 Black Rollup Garage Door", price:344.64, category:"DOOR HARDWARE" },
+  { id:'m322', desc:"7' Rails (Pair)", price:33.25, category:"DOOR HARDWARE" },
+  { id:'m323', desc:"4' Diamond Plate Threshold", price:7.4, category:"DOOR HARDWARE" },
+  { id:'m324', desc:"6' Diamond Plate Threshold", price:8.02, category:"DOOR HARDWARE" },
+  { id:'m325', desc:"6' Threshold (6x7 Garage Door)", price:24.5, category:"DOOR HARDWARE" },
+  { id:'m326', desc:"8' Threshold (8x7 Garage Door)", price:29.25, category:"DOOR HARDWARE" },
+  { id:'m327', desc:"9' Threshold (9x7 Garage Door)", price:32.0, category:"DOOR HARDWARE" },
+  { id:'m328', desc:"Ramps (Pair)", price:100.0, category:"DOOR HARDWARE" },
+  { id:'m329', desc:"J Hooks", price:12.0, category:"DOOR HARDWARE" },
+  { id:'m330', desc:"6x6 Rampage Door", price:0.0, category:"DOOR HARDWARE" },
+  { id:'m331', desc:"6x7 Rampage Door", price:0.0, category:"DOOR HARDWARE" },
+  { id:'m332', desc:"10x24 White Transom", price:23.95, category:"WALLS" },
+  { id:'m333', desc:"10x24 Brown Transom", price:22.85, category:"WALLS" },
+  { id:'m334', desc:"10x24 Black Transom", price:25.48, category:"WALLS" },
+  { id:'m335', desc:"10x29 White Transom", price:32.24, category:"WALLS" },
+  { id:'m336', desc:"10x29 Brown Transom", price:25.48, category:"WALLS" },
+  { id:'m337', desc:"10x29 Black Transom", price:32.24, category:"WALLS" },
+  { id:'m338', desc:"10x35 White Transom", price:0.0, category:"WALLS" },
+  { id:'m339', desc:"10x35 Brown Transom", price:0.0, category:"WALLS" },
+  { id:'m340', desc:"10x35 Black Transom", price:0.0, category:"WALLS" },
+  { id:'m341', desc:"10x40 White Transom", price:35.49, category:"WALLS" },
+  { id:'m342', desc:"10x40 Brown Transom", price:35.49, category:"WALLS" },
+  { id:'m343', desc:"10x40 Black Transom", price:35.5, category:"WALLS" },
+  { id:'m344', desc:"White Octagon Window", price:32.11, category:"WALLS" },
+  { id:'m345', desc:"Brown Octagon Window", price:32.11, category:"WALLS" },
+  { id:'m346', desc:"Black Octagon Window", price:32.11, category:"WALLS" },
+  { id:'m347', desc:"2x3 White Aluminum Window", price:36.13, category:"WALLS" },
+  { id:'m348', desc:"2x3 Black Aluminum Window", price:39.73, category:"WALLS" },
+  { id:'m349', desc:"2x3 Brown Aluminum Window", price:31.95, category:"WALLS" },
+  { id:'m350', desc:"3x3 White Aluminum Window", price:52.79, category:"WALLS" },
+  { id:'m351', desc:"3x3 Black Aluminum Window", price:49.74, category:"WALLS" },
+  { id:'m352', desc:"3x3 Brown Aluminum Window", price:40.15, category:"WALLS" },
+  { id:'m353', desc:"2x3 White Insulated Window", price:88.93, category:"WALLS" },
+  { id:'m354', desc:"2x3 White Gridless Insulated Window", price:201.25, category:"WALLS" },
+  { id:'m355', desc:"2x3 Black Gridless Insulated Window", price:263.87, category:"WALLS" },
+  { id:'m356', desc:"2x3 Brown Insulated Window", price:88.93, category:"WALLS" },
+  { id:'m357', desc:"3x3 White Insulated Window", price:103.14, category:"WALLS" },
+  { id:'m358', desc:"3x3 White Gridless Insulated Window", price:0.0, category:"WALLS" },
+  { id:'m359', desc:"3x3 Brown Insulated Window", price:103.14, category:"WALLS" },
+  { id:'m360', desc:"10x29 White Insulated Transom", price:79.11, category:"WALLS" },
+  { id:'m361', desc:"10x29 Black Insulated Transom", price:79.11, category:"WALLS" },
+  { id:'m362', desc:"10x72 White Insulated Transom", price:143.71, category:"WALLS" },
+  { id:'m363', desc:"10x72 Black Insulated Transom", price:232.37, category:"WALLS" },
+  { id:'m364', desc:"2x4 White Insulated Window", price:88.09, category:"WALLS" },
+  { id:'m365', desc:"2x4 Black Insulated Window", price:88.09, category:"WALLS" },
+  { id:'m366', desc:"Door Hinges", price:1.37, category:"DOOR HARDWARE" },
+  { id:'m367', desc:"T-Handles (Short)", price:3.05, category:"DOOR HARDWARE" },
+  { id:'m368', desc:"T-Handles (Long)", price:4.05, category:"DOOR HARDWARE" },
+  { id:'m369', desc:"D Handles", price:1.51, category:"DOOR HARDWARE" },
+  { id:'m370', desc:"Heavy Duty Latches (Barrel Plunger)", price:2.78, category:"DOOR HARDWARE" },
+  { id:'m371', desc:"3x4 Truss Assembly Plates", price:0.21, category:"ROOF" },
+  { id:'m372', desc:"Fiberglass Door Knobs", price:10.18, category:"DOOR HARDWARE" },
+  { id:'m373', desc:"Door Bumpers / Magnets", price:3.87, category:"DOOR HARDWARE" },
+  { id:'m374', desc:"Gable Vents", price:9.07, category:"METAL" },
+  { id:'m375', desc:"1/2\" Brown Z-Bar Channels", price:2.18, category:"TRIM" },
+  { id:'m376', desc:"Flower Boxes", price:21.23, category:"TRIM" },
+  { id:'m377', desc:"Studio Vents White", price:1.57, category:"TRIM" },
+  { id:'m378', desc:"Studio Vents Brown", price:1.57, category:"TRIM" },
+  { id:'m379', desc:"White Drip Edge", price:2.98, category:"METAL" },
+  { id:'m380', desc:"Brown Drip Edge", price:2.98, category:"METAL" },
+  { id:'m381', desc:"Black Drip Edge", price:2.98, category:"METAL" },
+  { id:'m382', desc:"Gable Mount Fan", price:0.0, category:"METAL" },
+  { id:'m383', desc:"Automatic Gable Shutters", price:0.0, category:"METAL" },
+  { id:'m384', desc:"Outside Closure", price:0.66, category:"METAL" },
+  { id:'m385', desc:"Inside Closure", price:0.66, category:"METAL" },
+  { id:'m386', desc:"Red Wingnut Wire Connector", price:0.14, category:"ELECTRICAL" },
+  { id:'m387', desc:"1/2\" Plastic Staples", price:0.0, category:"ELECTRICAL" },
+  { id:'m388', desc:"15A 3-Way Switches", price:2.58, category:"ELECTRICAL" },
+  { id:'m389', desc:"15A Light Switch", price:0.78, category:"ELECTRICAL" },
+  { id:'m390', desc:"15A Duplex Outlet", price:0.57, category:"ELECTRICAL" },
+  { id:'m391', desc:"Light Switch Wallplate", price:0.53, category:"ELECTRICAL" },
+  { id:'m392', desc:"Outlet Wallplate", price:0.43, category:"ELECTRICAL" },
+  { id:'m393', desc:"100W Light Bulb", price:2.59, category:"ELECTRICAL" },
+  { id:'m394', desc:"1G 18CU Blue Boxes (Light Switches)", price:0.61, category:"ELECTRICAL" },
+  { id:'m395', desc:"1G 20CU Round Boxes (Lights)", price:1.56, category:"ELECTRICAL" },
+  { id:'m396', desc:"1000 ft 14/2 15A Wire (Roll)", price:350.0, category:"ELECTRICAL" },
+  { id:'m397', desc:"Circuit Breaker Load Center", price:27.49, category:"ELECTRICAL" },
+  { id:'m398', desc:"250ft 14/3 15A Wire (Roll)", price:0.0, category:"ELECTRICAL" },
+  { id:'m399', desc:"15A 1-Pole Breakers", price:6.28, category:"ELECTRICAL" },
+  { id:'m400', desc:"Plastic Keyless Lamp Holder", price:2.32, category:"ELECTRICAL" },
+  { id:'m401', desc:"15A 125V Hinged Plugs Pigtail", price:0.0, category:"ELECTRICAL" },
+  { id:'m402', desc:"Exterior Receptacles", price:0.0, category:"ELECTRICAL" },
+  { id:'m403', desc:"Leviton Power Inlet Receptacle 15A 125V", price:0.0, category:"ELECTRICAL" },
+  { id:'m404', desc:"Clear Electrical Cover", price:0.0, category:"ELECTRICAL" },
+  { id:'m405', desc:"Exterior Receptacle Covers", price:0.0, category:"ELECTRICAL" },
+  { id:'m406', desc:"Flanged Inlet Plug", price:9.5, category:"ELECTRICAL" },
+  { id:'m407', desc:"1/2\" Romex Connectors", price:0.29, category:"ELECTRICAL" },
+  { id:'m408', desc:"Porch Lights", price:0.0, category:"ELECTRICAL" },
+  { id:'m409', desc:"Halo Lights 5/6\" Porch Lights", price:13.72, category:"ELECTRICAL" },
+  { id:'m410', desc:"1\" Insulated Plastic Staples (Dewalt)", price:0.02, category:"ELECTRICAL" },
+  { id:'m411', desc:"1\" Insulated Plastic Staples (Milwaukee)", price:0.02, category:"ELECTRICAL" },
+  { id:'m412', desc:"Silvertech Tape", price:0.11, category:"ELECTRICAL" },
+  { id:'m413', desc:"ZIP Flashing Tape", price:28.46, category:"ROOF" },
+  { id:'m414', desc:"Black Roof & Flashing Sealant", price:8.54, category:"ROOF" },
+  { id:'m415', desc:"Govee LED Lights", price:55.0, category:"ELECTRICAL" },
+  { id:'m416', desc:"Weed Screen", price:0.0, category:"FLOOR" },
+  { id:'m417', desc:"R13 Insulation (15\"x93\")", price:59.57, category:"WALLS" },
+  { id:'m418', desc:"Batt Insulation Roll - R13", price:19.91, category:"WALLS" },
+  { id:'m419', desc:"PG 13.5 Cable Joint 6-12mm", price:0.0, category:"ELECTRICAL" },
+  { id:'m420', desc:"A/C Unit", price:275.0, category:"ELECTRICAL" },
+  { id:'m421', desc:"Origami White SW7636 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m422', desc:"Navajo White SW6126 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m423', desc:"Alpine Gray Custom Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m424', desc:"Dovetail Gray SW7018 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m425', desc:"Web Gray SW7075 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m426', desc:"Naval Blue SW6244 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m427', desc:"Tricon Black SW6258 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m428', desc:"Urbane Bronze SW7048 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m429', desc:"Rustic Red SW7593 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m430', desc:"Sage Green SW2851 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m431', desc:"Sable Brown SW6083 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m432', desc:"Taupe Tone SW7633 Paint (Gal)", price:122.25, category:"PAINT" },
+  { id:'m433', desc:"Super Deck Floor Touchup Paint (Gal)", price:34.42, category:"PAINT" },
+  { id:'m434', desc:"PPG Urethane Redwood (Gal)", price:283.0, category:"PAINT" },
+  { id:'m435', desc:"PPG Urethane Chestnut Brown (Gal)", price:283.0, category:"PAINT" },
+  { id:'m436', desc:"PPG Urethane Barnwood Gray (Gal)", price:283.0, category:"PAINT" },
+  { id:'m437', desc:"PPG Urethane Ebony Charcoal (Gal)", price:283.0, category:"PAINT" },
+  { id:'m438', desc:"PPG Urethane Mahogany (Gal)", price:283.0, category:"PAINT" },
+  { id:'m439', desc:"PPG Urethane Butternut (Gal)", price:283.0, category:"PAINT" },
+  { id:'m440', desc:"White Caulk", price:2.25, category:"PAINT" },
+  { id:'m441', desc:"Clear Silicone", price:9.71, category:"PAINT" },
+  { id:'m442', desc:"Touch Up Cans", price:1.83, category:"PAINT" },
+  { id:'m443', desc:"Spray Primer", price:9.98, category:"PAINT" },
+  { id:'m444', desc:"Rust-Oleum Metallic Finish", price:5.77, category:"PAINT" },
+  { id:'m445', desc:"Rust-Oleum Gloss White", price:5.77, category:"PAINT" },
+  { id:'m446', desc:"6 Mil Plastic - Finished Sheds", price:62.28, category:"PAINT" },
+  { id:'m447', desc:"Clear Plastic - Painter", price:19.99, category:"PAINT" },
+  { id:'m448', desc:"Stain - Wood Finish Natural", price:11.56, category:"PAINT" },
+  { id:'m449', desc:"2\" Hole Saw", price:19.93, category:"METAL" },
+  { id:'m450', desc:"Metal Drill Bit 1/8\"", price:4.75, category:"METAL" },
+  { id:'m451', desc:"Router Bit 1/2 x 1-3/16\"", price:18.14, category:"METAL" },
+  { id:'m452', desc:"2 In Torx #20 Impact", price:1.19, category:"METAL" },
+  { id:'m453', desc:"1/4\" x 1/4\" Male NPT Plug", price:1.3, category:"METAL" },
+  { id:'m454', desc:"1/4\" Brass Female Industrial Coupler", price:2.15, category:"METAL" },
+  { id:'m455', desc:"1/4\" NPT to 3/8\" Barb Hose Fittings", price:1.17, category:"METAL" },
+  { id:'m456', desc:"Tru-Flate 1/4\" Female NPT Plug", price:1.47, category:"METAL" },
+  { id:'m457', desc:"Air Tool Oil", price:5.12, category:"METAL" },
+  { id:'m458', desc:"Oil Dispenser", price:2.06, category:"METAL" },
+  { id:'m459', desc:"Hose Clamps 3/8\"", price:0.45, category:"METAL" },
+  { id:'m460', desc:"Hose Clamps 1/4\"", price:0.4, category:"METAL" },
+  { id:'m461', desc:"Thread Seal Tape", price:0.83, category:"METAL" },
+  { id:'m462', desc:"Reciprocating Blade 9\"", price:2.48, category:"METAL" },
+  { id:'m463', desc:"10\" Miter Saw Blade", price:44.98, category:"METAL" },
+  { id:'m464', desc:"12\" Miter Saw Blade", price:26.99, category:"METAL" },
+  { id:'m465', desc:"6-1/2\" Circular Saw Blade", price:7.9, category:"METAL" },
+  { id:'m466', desc:"Nitrile Gloves", price:0.13, category:"PAINT" },
+  { id:'m467', desc:"Mask Filters 6200", price:0.38, category:"PAINT" },
+  { id:'m468', desc:"Wood Filler", price:9.85, category:"PAINT" },
+  { id:'m469', desc:"Goof Off", price:21.0, category:"PAINT" },
+  { id:'m470', desc:"Safety Glasses", price:2.5, category:"PAINT" },
+  { id:'m471', desc:"Shop Rags", price:0.25, category:"PAINT" },
+  { id:'m472', desc:"Blue Tape", price:5.0, category:"PAINT" },
+  { id:'m473', desc:"Tips 414", price:45.98, category:"PAINT" },
+  { id:'m474', desc:"Tips 517", price:51.57, category:"PAINT" },
+  { id:'m475', desc:"4\" Roller Frame", price:1.99, category:"PAINT" },
+  { id:'m476', desc:"9\" Roller Frame", price:3.17, category:"PAINT" },
+  { id:'m477', desc:"4\" Roller Cover", price:2.99, category:"PAINT" },
+  { id:'m478', desc:"9\" Roller Cover", price:3.54, category:"PAINT" },
+  { id:'m479', desc:"7/8\" Hose Inlet Strainer Filter", price:1.5, category:"PAINT" },
+  { id:'m480', desc:"2\" Chip Brushes", price:0.55, category:"PAINT" },
+  { id:'m481', desc:"1\" Chip Brushes", price:0.5, category:"PAINT" },
+  { id:'m482', desc:"Paint Pads", price:1.5, category:"PAINT" },
+  { id:'m483', desc:"Spray Gun", price:260.0, category:"PAINT" },
+  { id:'m484', desc:"Pump Repair Kit 18B260", price:91.17, category:"PAINT" },
+  { id:'m485', desc:"Gun Filter 287032", price:1.28, category:"PAINT" },
+  { id:'m486', desc:"Dust Collector Bags", price:3.99, category:"PAINT" },
+  { id:'m487', desc:"1\" Roofing Screws - Bag 100 pcs", price:13.1, category:"METAL" },
+  { id:'m488', desc:"1-1/2\" Roofing Screws - Bag 100pcs", price:14.5, category:"METAL" },
+  { id:'m489', desc:"8'6\" Metal Rake", price:10.63, category:"METAL" },
+  { id:'m490', desc:"10'6\" Metal Rake", price:13.25, category:"METAL" },
+  { id:'m491', desc:"12'6\" Metal Rake", price:15.63, category:"METAL" },
+  { id:'m492', desc:"14'6\" Metal Rake", price:18.13, category:"METAL" },
+  { id:'m493', desc:"8'6\" Metal Ridge Cap", price:10.63, category:"METAL" },
+  { id:'m494', desc:"10'6\" Metal Ridge Cap", price:12.5, category:"METAL" },
+  { id:'m495', desc:"12'6\" Metal Ridge Cap", price:15.63, category:"METAL" },
+  { id:'m496', desc:"14'6\" Metal Ridge Cap", price:18.13, category:"METAL" },
+  { id:'m497', desc:"16'6\" Metal Ridge Cap", price:20.63, category:"METAL" },
+  { id:'m498', desc:"8'6\" Dormer End Wall Flashing", price:6.52, category:"METAL" },
+  { id:'m499', desc:"12'6\" Dormer End Wall Flashing", price:8.75, category:"METAL" },
+  { id:'m500', desc:"12'6\" Dormer Side Wall Flashing", price:12.5, category:"METAL" },
+  { id:'m501', desc:"36\" Metal Ag Panel", price:7.71, category:"METAL" },
+  { id:'m502', desc:"51\" Metal Ag Panel", price:10.92, category:"METAL" },
+  { id:'m503', desc:"57\" Metal Ag Panel", price:12.21, category:"METAL" },
+  { id:'m504', desc:"58\" Metal Ag Panel", price:13.24, category:"METAL" },
+  { id:'m505', desc:"66\" Metal Ag Panel", price:0.0, category:"METAL" },
+  { id:'m506', desc:"70\" Metal Ag Panel", price:15.21, category:"METAL" },
+  { id:'m507', desc:"77\" Metal Ag Panel", price:16.49, category:"METAL" },
+  { id:'m508', desc:"98\" Metal Ag Panel", price:22.14, category:"METAL" },
+  { id:'m509', desc:"117\" Metal Ag Panel", price:23.06, category:"METAL" },
+  { id:'m510', desc:"140\" Metal Ag Panel", price:31.96, category:"METAL" },
+  { id:'m511', desc:"153\" Metal Ag Panel", price:32.77, category:"METAL" },
+  { id:'m512', desc:"188\" Metal Ag Panel", price:42.92, category:"METAL" },
+  { id:'m513', desc:"8'6\" Facade Trim", price:9.52, category:"METAL" },
+  { id:'m514', desc:"10'6\" Facade Trim", price:11.76, category:"METAL" },
+  { id:'m515', desc:"12'6\" Facade Trim", price:14.0, category:"METAL" },
+  { id:'m516', desc:"3x3 Corner Trim", price:5.51, category:"METAL" },
+  { id:'m517', desc:"8'6\" GDT Post Trim BLK", price:8.25, category:"METAL" },
+  { id:'m518', desc:"8'3\" Overhead Trim", price:10.88, category:"METAL" },
+  { id:'m519', desc:"12'6\" J Channel", price:5.0, category:"METAL" },
+  { id:'m520', desc:"Corner Rake 8'6\"", price:10.63, category:"METAL" },
+  { id:'m521', desc:"Corner Rake 14'", price:18.13, category:"METAL" },
+  { id:'m522', desc:"12'6\" Eave Trim", price:10.88, category:"METAL" }
 ];
-
 // Vendor directory
 let vendors = [
   { id:'v1',  name:'PPG',                    contact:'', phone:'', email:'', website:'www.ppg.com',                    category:'Paint',           notes:'PPG exterior paint, urethane, caulk' },
@@ -1837,22 +1947,333 @@ let buildings = [
   { id:'b82', name:'CLASSIC UTILITY 14X24', materialCost:0, bom:[{matId:'m2', qty:12.0}, {matId:'m73', qty:81.0}, {matId:'m3', qty:12.0}, {matId:'m6', qty:6.0}, {matId:'m7', qty:42.0}, {matId:'m8', qty:36.0}, {matId:'m9', qty:36.0}, {matId:'m10', qty:132.0}, {matId:'m11', qty:85.5}, {matId:'m61', qty:243.0}, {matId:'m49', qty:78.0}, {matId:'m15', qty:9.0}, {matId:'m14', qty:51.0}, {matId:'m50', qty:48.0}, {matId:'m17', qty:102.0}, {matId:'m18', qty:12.0}, {matId:'m20', qty:18.0}, {matId:'m21', qty:3.0}, {matId:'m22', qty:3.0}, {matId:'m48', qty:3.0}, {matId:'m27', qty:6.0}, {matId:'m23', qty:18.0}, {matId:'m26', qty:18.0}, {matId:'m24', qty:198.0}, {matId:'m28', qty:40.5}, {matId:'m86', qty:66.0}, {matId:'m31', qty:12.0}, {matId:'m33', qty:8.5}, {matId:'m34', qty:7.6}, {matId:'m36', qty:4.0}, {matId:'m37', qty:6.0}, {matId:'m38', qty:19.5}, {matId:'m40', qty:1.5}, {matId:'m39', qty:1.5}, {matId:'m41', qty:6.0}, {matId:'m42', qty:12.0}] },
 ];
 
-// Normalise all building names to Title Case
-buildings.forEach(b => { b.name = normBldName(b.name); });
+// Normalise all building names
 
-// Inventory (live stock)
-let inventory = (() => {
-  const map = new Map();
-  buildings.forEach(b => {
-    b.bom.forEach(line => {
-      const mat = matLib.find(m => m.id === line.matId);
-      if (mat && !map.has(mat.desc)) {
-        map.set(mat.desc, { desc: mat.desc, qty: Math.floor(Math.random()*200)+50, price: mat.price, category: mat.category });
-      }
-    });
-  });
-  return Array.from(map.values());
-})();
+let inventory = [
+  { desc:"ProStruct 3/4\" Flooring", qty:623, price:34.97, category:"FLOOR" },
+  { desc:"TechShield OSB 7/16\"", qty:1082, price:17.53, category:"FLOOR" },
+  { desc:"OSB 7/16\"", qty:780, price:9.27, category:"FLOOR" },
+  { desc:"Acacia T&G 5/8\"", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"SilverTech LP SmartSiding 3/8 8\" OC", qty:521, price:42.0, category:"WALLS" },
+  { desc:"LP Lap 3/8 8\" OC (Elite 16ft)", qty:840, price:9.6, category:"WALLS" },
+  { desc:"LP SmartSiding 3/8 8\" OC", qty:878, price:29.6, category:"WALLS" },
+  { desc:"LP 190 Series Trim 1x4x16", qty:2076, price:9.45, category:"TRIM" },
+  { desc:"Farmhouse B&B Siding", qty:0, price:0.0, category:"WALLS" },
+  { desc:"Phantom Shadow Stone", qty:39, price:119.47, category:"WALLS" },
+  { desc:"Morning Aspen Stone", qty:5, price:119.47, category:"WALLS" },
+  { desc:"2x4x69\" (Craftsman)", qty:0, price:0.0, category:"WALLS" },
+  { desc:"2x4x72\" (6')", qty:2082, price:3.34, category:"WALLS" },
+  { desc:"2x4x84\" (7')", qty:1912, price:3.55, category:"WALLS" },
+  { desc:"2x4x120\" (10')", qty:921, price:4.53, category:"WALLS" },
+  { desc:"2x4x144\" (12')", qty:1462, price:4.92, category:"WALLS" },
+  { desc:"2x4x192\" (16')", qty:483, price:8.16, category:"WALLS" },
+  { desc:"2x6x144\" (12')", qty:214, price:8.27, category:"WALLS" },
+  { desc:"2x6x168\" (14')", qty:225, price:8.68, category:"WALLS" },
+  { desc:"2x6x192\" (16')", qty:96, price:12.57, category:"WALLS" },
+  { desc:"4x6 - 8' Notched 4x6 Runners", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"4x6 - 12' Notched 4x6 Runners", qty:185, price:18.6, category:"FLOOR" },
+  { desc:"4x6 - 16' Notched 4x6 Runners", qty:302, price:24.8, category:"FLOOR" },
+  { desc:"4x6 - 20' Notched 4x6 Runners", qty:186, price:34.0, category:"FLOOR" },
+  { desc:"2x4x93\" - Pressure Treated", qty:208, price:3.89, category:"FLOOR" },
+  { desc:"2x4x117\" - Pressure Treated", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"2x4x130\" - Pressure Treated", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"2x4x192\" - Pressure Treated", qty:171, price:8.68, category:"FLOOR" },
+  { desc:"2x6x117\" - Pressure Treated", qty:806, price:6.83, category:"FLOOR" },
+  { desc:"2x6x130\" - Pressure Treated", qty:593, price:7.76, category:"FLOOR" },
+  { desc:"2x6x144\" - Pressure Treated", qty:279, price:8.1, category:"FLOOR" },
+  { desc:"2x6x154\" - Pressure Treated", qty:250, price:9.11, category:"FLOOR" },
+  { desc:"2x6x192\" (16') - Pressure Treated", qty:425, price:11.09, category:"FLOOR" },
+  { desc:"Decking (12') - Salt Water", qty:48, price:20.28, category:"FLOOR" },
+  { desc:"Decking (16') - Salt Water", qty:386, price:27.04, category:"FLOOR" },
+  { desc:"Decking (16') - Sand Bar", qty:25, price:27.04, category:"FLOOR" },
+  { desc:"3\" x .120 HDG (Roll - 450 pcs)", qty:175500, price:0.02, category:"FLOOR" },
+  { desc:"2\" x .092 HDG (Roll - 300 pcs)", qty:10800, price:0.01, category:"FLOOR" },
+  { desc:"1-1/2\" x .092 HDG", qty:54000, price:0.01, category:"FLOOR" },
+  { desc:"6\" CTX156 Lag Screws", qty:4000, price:0.53, category:"FLOOR" },
+  { desc:"5\" CTX155 Lag Screws", qty:2575, price:0.45, category:"FLOOR" },
+  { desc:"2\" CTX Lag Screws (Box/700)", qty:2800, price:0.04, category:"FLOOR" },
+  { desc:"Decking Screws - Gray", qty:7000, price:0.08, category:"FLOOR" },
+  { desc:"Decking Screws - Brown", qty:0, price:0.08, category:"FLOOR" },
+  { desc:"Staples 1\" Crown x 1\" Leg 16ga (10,000/box)", qty:70000, price:0.01, category:"FLOOR" },
+  { desc:"Trim Nails (100 pcs)", qty:36000, price:0.01, category:"TRIM" },
+  { desc:"1-1/2\" Finish Nails 16ga", qty:22000, price:0.01, category:"TRIM" },
+  { desc:"3/4\" Hinge Screws (piece)", qty:24000, price:0.02, category:"DOOR HARDWARE" },
+  { desc:"2\" Hinge Screws (piece)", qty:9000, price:0.03, category:"DOOR HARDWARE" },
+  { desc:"2-1/2\" Hinge Screws (Magnets)", qty:3750, price:0.05, category:"DOOR HARDWARE" },
+  { desc:"3/4\" Zinc Screws (piece)", qty:35000, price:0.01, category:"DOOR HARDWARE" },
+  { desc:"3-1/2\" CTX Lag Screws", qty:700, price:0.35, category:"FLOOR" },
+  { desc:"7/8\" x .120 EG Roofing Nails", qty:7200, price:0.004, category:"ROOF" },
+  { desc:"Arrow T50 3/8\" Staples (Felt)", qty:45000, price:0.002, category:"ROOF" },
+  { desc:"Black Roofing Felt", qty:4, price:26.21, category:"ROOF" },
+  { desc:"20' Ridge Vent - Metal Roof", qty:4, price:48.81, category:"ROOF" },
+  { desc:"4' Ridge Vent - Shingle Roof", qty:10, price:10.3, category:"ROOF" },
+  { desc:"Charcoal Architectural Shingles", qty:12, price:33.99, category:"ROOF" },
+  { desc:"Charcoal 3-Tab Shingles", qty:20, price:32.0, category:"ROOF" },
+  { desc:"Weathered Wood Architectural Shingles", qty:10, price:33.99, category:"ROOF" },
+  { desc:"Weathered Gray 3-Tab Shingles", qty:6, price:32.0, category:"ROOF" },
+  { desc:"Hickory Architectural Shingles", qty:5, price:33.9, category:"ROOF" },
+  { desc:"Hickory 3-Tab / Ridge Cap", qty:5, price:50.1, category:"ROOF" },
+  { desc:"Slate Architectural Shingles", qty:5, price:33.99, category:"ROOF" },
+  { desc:"Slate 3-Tab Shingles", qty:9, price:50.1, category:"ROOF" },
+  { desc:"Brakwood Architectural Shingles", qty:3, price:33.99, category:"ROOF" },
+  { desc:"Shakewood Architectural Shingles", qty:6, price:33.99, category:"ROOF" },
+  { desc:"Pewter Gray Architectural Shingles", qty:4, price:33.99, category:"ROOF" },
+  { desc:"Pewter Gray 3-Tab Shingles", qty:0, price:50.1, category:"ROOF" },
+  { desc:"Post Brackets", qty:137, price:3.05, category:"TRIM" },
+  { desc:"White Railings 8'", qty:16, price:102.34, category:"TRIM" },
+  { desc:"White Railing Brackets", qty:30, price:11.25, category:"TRIM" },
+  { desc:"Black Railings 8'", qty:11, price:156.86, category:"TRIM" },
+  { desc:"Black Railing Brackets", qty:45, price:35.49, category:"TRIM" },
+  { desc:"10' Starter Strip", qty:0, price:0.0, category:"WALLS" },
+  { desc:"White J-Channel", qty:0, price:0.0, category:"WALLS" },
+  { desc:"9'x150' House Wrap", qty:0, price:0.0, category:"WALLS" },
+  { desc:"White Corner Trim", qty:0, price:0.0, category:"TRIM" },
+  { desc:"1x8x12' Pine Boards", qty:0, price:0.0, category:"WALLS" },
+  { desc:"Hickman Coast Laminate Flooring", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"Underlayment", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"Solid Short Door Right Hand In Swing", qty:12, price:204.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Short Door Left Hand In Swing", qty:11, price:204.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Tall Door Right Hand In Swing", qty:10, price:204.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Tall Door Left Hand In Swing", qty:10, price:204.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Short Door Right Hand In Swing", qty:8, price:240.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Short Door Left Hand In Swing", qty:13, price:240.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Tall Door Right Hand In Swing", qty:20, price:240.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Tall Door Left Hand In Swing", qty:12, price:240.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Tall Door Left Hand In Swing", qty:1, price:292.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Short Door Left Hand In Swing", qty:3, price:292.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Tall Door Right Hand In Swing", qty:14, price:292.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Short Door Right Hand In Swing", qty:0, price:292.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Tall Door Left Hand In Swing", qty:1, price:313.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Short Door Left Hand In Swing", qty:1, price:313.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Tall Door Right Hand In Swing", qty:1, price:313.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Short Door Right Hand In Swing", qty:1, price:313.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Tall French Right Active In Swing", qty:2, price:559.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Short French In Swing", qty:1, price:559.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Tall French Out Swing", qty:3, price:569.0, category:"DOOR HARDWARE" },
+  { desc:"9 Lite Short French Out Swing", qty:1, price:569.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Tall French Door Out Swing", qty:3, price:497.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Short French Door Out Swing", qty:4, price:497.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Tall French Door In Swing", qty:4, price:465.0, category:"DOOR HARDWARE" },
+  { desc:"Solid Short French Door In Swing", qty:2, price:465.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Tall French Door In Swing", qty:10, price:641.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Short French Door Right Active In Swing", qty:3, price:641.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Tall French Door Right Active Out Swing", qty:3, price:673.0, category:"DOOR HARDWARE" },
+  { desc:"15 Lite Short French Door Right Active Out Swing", qty:3, price:673.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Tall French Door Right Active Out Swing", qty:2, price:715.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Short French Door Right Active Out Swing", qty:2, price:715.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Tall French Door Right Active In Swing", qty:2, price:683.0, category:"DOOR HARDWARE" },
+  { desc:"Full Lite Short French Door Right Active In Swing", qty:1, price:683.0, category:"DOOR HARDWARE" },
+  { desc:"Sill Pans", qty:24, price:8.66, category:"DOOR HARDWARE" },
+  { desc:"French Sill Pan", qty:0, price:9.0, category:"DOOR HARDWARE" },
+  { desc:"9x7 Rollup Garage Door", qty:0, price:370.32, category:"DOOR HARDWARE" },
+  { desc:"8x7 Rollup Garage Door", qty:0, price:344.64, category:"DOOR HARDWARE" },
+  { desc:"6x7 Rollup Garage Door", qty:16, price:281.44, category:"DOOR HARDWARE" },
+  { desc:"6x6 Rollup Garage Door", qty:15, price:268.91, category:"DOOR HARDWARE" },
+  { desc:"6' Rails (Pair)", qty:63, price:0.0, category:"DOOR HARDWARE" },
+  { desc:"9x7 Black Rollup Garage Door", qty:4, price:370.32, category:"DOOR HARDWARE" },
+  { desc:"8x7 Black Rollup Garage Door", qty:2, price:344.64, category:"DOOR HARDWARE" },
+  { desc:"7' Rails (Pair)", qty:10, price:33.25, category:"DOOR HARDWARE" },
+  { desc:"4' Diamond Plate Threshold", qty:92, price:7.4, category:"DOOR HARDWARE" },
+  { desc:"6' Diamond Plate Threshold", qty:285, price:8.02, category:"DOOR HARDWARE" },
+  { desc:"6' Threshold (6x7 Garage Door)", qty:82, price:24.5, category:"DOOR HARDWARE" },
+  { desc:"8' Threshold (8x7 Garage Door)", qty:69, price:29.25, category:"DOOR HARDWARE" },
+  { desc:"9' Threshold (9x7 Garage Door)", qty:107, price:32.0, category:"DOOR HARDWARE" },
+  { desc:"Ramps (Pair)", qty:33, price:100.0, category:"DOOR HARDWARE" },
+  { desc:"J Hooks", qty:33, price:12.0, category:"DOOR HARDWARE" },
+  { desc:"6x6 Rampage Door", qty:0, price:0.0, category:"DOOR HARDWARE" },
+  { desc:"6x7 Rampage Door", qty:10, price:0.0, category:"DOOR HARDWARE" },
+  { desc:"10x24 White Transom", qty:27, price:23.95, category:"WALLS" },
+  { desc:"10x24 Brown Transom", qty:0, price:22.85, category:"WALLS" },
+  { desc:"10x24 Black Transom", qty:50, price:25.48, category:"WALLS" },
+  { desc:"10x29 White Transom", qty:9, price:32.24, category:"WALLS" },
+  { desc:"10x29 Brown Transom", qty:0, price:25.48, category:"WALLS" },
+  { desc:"10x29 Black Transom", qty:13, price:32.24, category:"WALLS" },
+  { desc:"10x35 White Transom", qty:0, price:0.0, category:"WALLS" },
+  { desc:"10x35 Brown Transom", qty:0, price:0.0, category:"WALLS" },
+  { desc:"10x35 Black Transom", qty:0, price:0.0, category:"WALLS" },
+  { desc:"10x40 White Transom", qty:39, price:35.49, category:"WALLS" },
+  { desc:"10x40 Brown Transom", qty:0, price:35.49, category:"WALLS" },
+  { desc:"10x40 Black Transom", qty:51, price:35.5, category:"WALLS" },
+  { desc:"White Octagon Window", qty:13, price:32.11, category:"WALLS" },
+  { desc:"Brown Octagon Window", qty:21, price:32.11, category:"WALLS" },
+  { desc:"Black Octagon Window", qty:9, price:32.11, category:"WALLS" },
+  { desc:"2x3 White Aluminum Window", qty:20, price:36.13, category:"WALLS" },
+  { desc:"2x3 Black Aluminum Window", qty:0, price:39.73, category:"WALLS" },
+  { desc:"2x3 Brown Aluminum Window", qty:0, price:31.95, category:"WALLS" },
+  { desc:"3x3 White Aluminum Window", qty:11, price:52.79, category:"WALLS" },
+  { desc:"3x3 Black Aluminum Window", qty:6, price:49.74, category:"WALLS" },
+  { desc:"3x3 Brown Aluminum Window", qty:16, price:40.15, category:"WALLS" },
+  { desc:"2x3 White Insulated Window", qty:7, price:88.93, category:"WALLS" },
+  { desc:"2x3 White Gridless Insulated Window", qty:17, price:201.25, category:"WALLS" },
+  { desc:"2x3 Black Gridless Insulated Window", qty:8, price:263.87, category:"WALLS" },
+  { desc:"2x3 Brown Insulated Window", qty:17, price:88.93, category:"WALLS" },
+  { desc:"3x3 White Insulated Window", qty:7, price:103.14, category:"WALLS" },
+  { desc:"3x3 White Gridless Insulated Window", qty:0, price:0.0, category:"WALLS" },
+  { desc:"3x3 Brown Insulated Window", qty:10, price:103.14, category:"WALLS" },
+  { desc:"10x29 White Insulated Transom", qty:2, price:79.11, category:"WALLS" },
+  { desc:"10x29 Black Insulated Transom", qty:4, price:79.11, category:"WALLS" },
+  { desc:"10x72 White Insulated Transom", qty:2, price:143.71, category:"WALLS" },
+  { desc:"10x72 Black Insulated Transom", qty:4, price:232.37, category:"WALLS" },
+  { desc:"2x4 White Insulated Window", qty:0, price:88.09, category:"WALLS" },
+  { desc:"2x4 Black Insulated Window", qty:0, price:88.09, category:"WALLS" },
+  { desc:"Door Hinges", qty:250, price:1.37, category:"DOOR HARDWARE" },
+  { desc:"T-Handles (Short)", qty:720, price:3.05, category:"DOOR HARDWARE" },
+  { desc:"T-Handles (Long)", qty:0, price:4.05, category:"DOOR HARDWARE" },
+  { desc:"D Handles", qty:300, price:1.51, category:"DOOR HARDWARE" },
+  { desc:"Heavy Duty Latches (Barrel Plunger)", qty:400, price:2.78, category:"DOOR HARDWARE" },
+  { desc:"3x4 Truss Assembly Plates", qty:13220, price:0.21, category:"ROOF" },
+  { desc:"Fiberglass Door Knobs", qty:33, price:10.18, category:"DOOR HARDWARE" },
+  { desc:"Door Bumpers / Magnets", qty:260, price:3.87, category:"DOOR HARDWARE" },
+  { desc:"Gable Vents", qty:83, price:9.07, category:"METAL" },
+  { desc:"1/2\" Brown Z-Bar Channels", qty:445, price:2.18, category:"TRIM" },
+  { desc:"Flower Boxes", qty:18, price:21.23, category:"TRIM" },
+  { desc:"Studio Vents White", qty:32, price:1.57, category:"TRIM" },
+  { desc:"Studio Vents Brown", qty:295, price:1.57, category:"TRIM" },
+  { desc:"White Drip Edge", qty:0, price:2.98, category:"METAL" },
+  { desc:"Brown Drip Edge", qty:884, price:2.98, category:"METAL" },
+  { desc:"Black Drip Edge", qty:6, price:2.98, category:"METAL" },
+  { desc:"Gable Mount Fan", qty:0, price:0.0, category:"METAL" },
+  { desc:"Automatic Gable Shutters", qty:0, price:0.0, category:"METAL" },
+  { desc:"Outside Closure", qty:248, price:0.66, category:"METAL" },
+  { desc:"Inside Closure", qty:0, price:0.66, category:"METAL" },
+  { desc:"Red Wingnut Wire Connector", qty:2750, price:0.14, category:"ELECTRICAL" },
+  { desc:"1/2\" Plastic Staples", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"15A 3-Way Switches", qty:27, price:2.58, category:"ELECTRICAL" },
+  { desc:"15A Light Switch", qty:50, price:0.78, category:"ELECTRICAL" },
+  { desc:"15A Duplex Outlet", qty:150, price:0.57, category:"ELECTRICAL" },
+  { desc:"Light Switch Wallplate", qty:50, price:0.53, category:"ELECTRICAL" },
+  { desc:"Outlet Wallplate", qty:60, price:0.43, category:"ELECTRICAL" },
+  { desc:"100W Light Bulb", qty:64, price:2.59, category:"ELECTRICAL" },
+  { desc:"1G 18CU Blue Boxes (Light Switches)", qty:86, price:0.61, category:"ELECTRICAL" },
+  { desc:"1G 20CU Round Boxes (Lights)", qty:92, price:1.56, category:"ELECTRICAL" },
+  { desc:"1000 ft 14/2 15A Wire (Roll)", qty:3, price:350.0, category:"ELECTRICAL" },
+  { desc:"Circuit Breaker Load Center", qty:12, price:27.49, category:"ELECTRICAL" },
+  { desc:"250ft 14/3 15A Wire (Roll)", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"15A 1-Pole Breakers", qty:243, price:6.28, category:"ELECTRICAL" },
+  { desc:"Plastic Keyless Lamp Holder", qty:69, price:2.32, category:"ELECTRICAL" },
+  { desc:"15A 125V Hinged Plugs Pigtail", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"Exterior Receptacles", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"Leviton Power Inlet Receptacle 15A 125V", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"Clear Electrical Cover", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"Exterior Receptacle Covers", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"Flanged Inlet Plug", qty:54, price:9.5, category:"ELECTRICAL" },
+  { desc:"1/2\" Romex Connectors", qty:100, price:0.29, category:"ELECTRICAL" },
+  { desc:"Porch Lights", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"Halo Lights 5/6\" Porch Lights", qty:26, price:13.72, category:"ELECTRICAL" },
+  { desc:"1\" Insulated Plastic Staples (Dewalt)", qty:2700, price:0.02, category:"ELECTRICAL" },
+  { desc:"1\" Insulated Plastic Staples (Milwaukee)", qty:13200, price:0.02, category:"ELECTRICAL" },
+  { desc:"Silvertech Tape", qty:2, price:0.11, category:"ELECTRICAL" },
+  { desc:"ZIP Flashing Tape", qty:18, price:28.46, category:"ROOF" },
+  { desc:"Black Roof & Flashing Sealant", qty:5, price:8.54, category:"ROOF" },
+  { desc:"Govee LED Lights", qty:3, price:55.0, category:"ELECTRICAL" },
+  { desc:"Weed Screen", qty:0, price:0.0, category:"FLOOR" },
+  { desc:"R13 Insulation (15\"x93\")", qty:2, price:59.57, category:"WALLS" },
+  { desc:"Batt Insulation Roll - R13", qty:14, price:19.91, category:"WALLS" },
+  { desc:"PG 13.5 Cable Joint 6-12mm", qty:0, price:0.0, category:"ELECTRICAL" },
+  { desc:"A/C Unit", qty:1, price:275.0, category:"ELECTRICAL" },
+  { desc:"Origami White SW7636 Paint (Gal)", qty:5, price:122.25, category:"PAINT" },
+  { desc:"Navajo White SW6126 Paint (Gal)", qty:5, price:122.25, category:"PAINT" },
+  { desc:"Alpine Gray Custom Paint (Gal)", qty:4, price:122.25, category:"PAINT" },
+  { desc:"Dovetail Gray SW7018 Paint (Gal)", qty:5, price:122.25, category:"PAINT" },
+  { desc:"Web Gray SW7075 Paint (Gal)", qty:6, price:122.25, category:"PAINT" },
+  { desc:"Naval Blue SW6244 Paint (Gal)", qty:5, price:122.25, category:"PAINT" },
+  { desc:"Tricon Black SW6258 Paint (Gal)", qty:4, price:122.25, category:"PAINT" },
+  { desc:"Urbane Bronze SW7048 Paint (Gal)", qty:4, price:122.25, category:"PAINT" },
+  { desc:"Rustic Red SW7593 Paint (Gal)", qty:2, price:122.25, category:"PAINT" },
+  { desc:"Sage Green SW2851 Paint (Gal)", qty:1, price:122.25, category:"PAINT" },
+  { desc:"Sable Brown SW6083 Paint (Gal)", qty:1, price:122.25, category:"PAINT" },
+  { desc:"Taupe Tone SW7633 Paint (Gal)", qty:0, price:122.25, category:"PAINT" },
+  { desc:"Super Deck Floor Touchup Paint (Gal)", qty:0, price:34.42, category:"PAINT" },
+  { desc:"PPG Urethane Redwood (Gal)", qty:5, price:283.0, category:"PAINT" },
+  { desc:"PPG Urethane Chestnut Brown (Gal)", qty:3, price:283.0, category:"PAINT" },
+  { desc:"PPG Urethane Barnwood Gray (Gal)", qty:3, price:283.0, category:"PAINT" },
+  { desc:"PPG Urethane Ebony Charcoal (Gal)", qty:4, price:283.0, category:"PAINT" },
+  { desc:"PPG Urethane Mahogany (Gal)", qty:4, price:283.0, category:"PAINT" },
+  { desc:"PPG Urethane Butternut (Gal)", qty:2, price:283.0, category:"PAINT" },
+  { desc:"White Caulk", qty:60, price:2.25, category:"PAINT" },
+  { desc:"Clear Silicone", qty:60, price:9.71, category:"PAINT" },
+  { desc:"Touch Up Cans", qty:0, price:1.83, category:"PAINT" },
+  { desc:"Spray Primer", qty:42, price:9.98, category:"PAINT" },
+  { desc:"Rust-Oleum Metallic Finish", qty:5, price:5.77, category:"PAINT" },
+  { desc:"Rust-Oleum Gloss White", qty:5, price:5.77, category:"PAINT" },
+  { desc:"6 Mil Plastic - Finished Sheds", qty:2, price:62.28, category:"PAINT" },
+  { desc:"Clear Plastic - Painter", qty:2, price:19.99, category:"PAINT" },
+  { desc:"Stain - Wood Finish Natural", qty:2, price:11.56, category:"PAINT" },
+  { desc:"2\" Hole Saw", qty:1, price:19.93, category:"METAL" },
+  { desc:"Metal Drill Bit 1/8\"", qty:7, price:4.75, category:"METAL" },
+  { desc:"Router Bit 1/2 x 1-3/16\"", qty:5, price:18.14, category:"METAL" },
+  { desc:"2 In Torx #20 Impact", qty:11, price:1.19, category:"METAL" },
+  { desc:"1/4\" x 1/4\" Male NPT Plug", qty:2, price:1.3, category:"METAL" },
+  { desc:"1/4\" Brass Female Industrial Coupler", qty:13, price:2.15, category:"METAL" },
+  { desc:"1/4\" NPT to 3/8\" Barb Hose Fittings", qty:15, price:1.17, category:"METAL" },
+  { desc:"Tru-Flate 1/4\" Female NPT Plug", qty:10, price:1.47, category:"METAL" },
+  { desc:"Air Tool Oil", qty:5, price:5.12, category:"METAL" },
+  { desc:"Oil Dispenser", qty:1, price:2.06, category:"METAL" },
+  { desc:"Hose Clamps 3/8\"", qty:11, price:0.45, category:"METAL" },
+  { desc:"Hose Clamps 1/4\"", qty:25, price:0.4, category:"METAL" },
+  { desc:"Thread Seal Tape", qty:1, price:0.83, category:"METAL" },
+  { desc:"Reciprocating Blade 9\"", qty:11, price:2.48, category:"METAL" },
+  { desc:"10\" Miter Saw Blade", qty:4, price:44.98, category:"METAL" },
+  { desc:"12\" Miter Saw Blade", qty:4, price:26.99, category:"METAL" },
+  { desc:"6-1/2\" Circular Saw Blade", qty:2, price:7.9, category:"METAL" },
+  { desc:"Nitrile Gloves", qty:100, price:0.13, category:"PAINT" },
+  { desc:"Mask Filters 6200", qty:40, price:0.38, category:"PAINT" },
+  { desc:"Wood Filler", qty:2, price:9.85, category:"PAINT" },
+  { desc:"Goof Off", qty:1, price:21.0, category:"PAINT" },
+  { desc:"Safety Glasses", qty:12, price:2.5, category:"PAINT" },
+  { desc:"Shop Rags", qty:150, price:0.25, category:"PAINT" },
+  { desc:"Blue Tape", qty:19, price:5.0, category:"PAINT" },
+  { desc:"Tips 414", qty:12, price:45.98, category:"PAINT" },
+  { desc:"Tips 517", qty:1, price:51.57, category:"PAINT" },
+  { desc:"4\" Roller Frame", qty:11, price:1.99, category:"PAINT" },
+  { desc:"9\" Roller Frame", qty:15, price:3.17, category:"PAINT" },
+  { desc:"4\" Roller Cover", qty:10, price:2.99, category:"PAINT" },
+  { desc:"9\" Roller Cover", qty:4, price:3.54, category:"PAINT" },
+  { desc:"7/8\" Hose Inlet Strainer Filter", qty:6, price:1.5, category:"PAINT" },
+  { desc:"2\" Chip Brushes", qty:20, price:0.55, category:"PAINT" },
+  { desc:"1\" Chip Brushes", qty:10, price:0.5, category:"PAINT" },
+  { desc:"Paint Pads", qty:6, price:1.5, category:"PAINT" },
+  { desc:"Spray Gun", qty:4, price:260.0, category:"PAINT" },
+  { desc:"Pump Repair Kit 18B260", qty:11, price:91.17, category:"PAINT" },
+  { desc:"Gun Filter 287032", qty:4, price:1.28, category:"PAINT" },
+  { desc:"Dust Collector Bags", qty:11, price:3.99, category:"PAINT" },
+  { desc:"1\" Roofing Screws - Bag 100 pcs", qty:83, price:13.1, category:"METAL" },
+  { desc:"1-1/2\" Roofing Screws - Bag 100pcs", qty:69, price:14.5, category:"METAL" },
+  { desc:"8'6\" Metal Rake", qty:216, price:10.63, category:"METAL" },
+  { desc:"10'6\" Metal Rake", qty:173, price:13.25, category:"METAL" },
+  { desc:"12'6\" Metal Rake", qty:309, price:15.63, category:"METAL" },
+  { desc:"14'6\" Metal Rake", qty:184, price:18.13, category:"METAL" },
+  { desc:"8'6\" Metal Ridge Cap", qty:0, price:10.63, category:"METAL" },
+  { desc:"10'6\" Metal Ridge Cap", qty:187, price:12.5, category:"METAL" },
+  { desc:"12'6\" Metal Ridge Cap", qty:171, price:15.63, category:"METAL" },
+  { desc:"14'6\" Metal Ridge Cap", qty:12, price:18.13, category:"METAL" },
+  { desc:"16'6\" Metal Ridge Cap", qty:0, price:20.63, category:"METAL" },
+  { desc:"8'6\" Dormer End Wall Flashing", qty:132, price:6.52, category:"METAL" },
+  { desc:"12'6\" Dormer End Wall Flashing", qty:154, price:8.75, category:"METAL" },
+  { desc:"12'6\" Dormer Side Wall Flashing", qty:124, price:12.5, category:"METAL" },
+  { desc:"36\" Metal Ag Panel", qty:533, price:7.71, category:"METAL" },
+  { desc:"51\" Metal Ag Panel", qty:469, price:10.92, category:"METAL" },
+  { desc:"57\" Metal Ag Panel", qty:536, price:12.21, category:"METAL" },
+  { desc:"58\" Metal Ag Panel", qty:0, price:13.24, category:"METAL" },
+  { desc:"66\" Metal Ag Panel", qty:0, price:0.0, category:"METAL" },
+  { desc:"70\" Metal Ag Panel", qty:475, price:15.21, category:"METAL" },
+  { desc:"77\" Metal Ag Panel", qty:400, price:16.49, category:"METAL" },
+  { desc:"98\" Metal Ag Panel", qty:15, price:22.14, category:"METAL" },
+  { desc:"117\" Metal Ag Panel", qty:77, price:23.06, category:"METAL" },
+  { desc:"140\" Metal Ag Panel", qty:83, price:31.96, category:"METAL" },
+  { desc:"153\" Metal Ag Panel", qty:77, price:32.77, category:"METAL" },
+  { desc:"188\" Metal Ag Panel", qty:0, price:42.92, category:"METAL" },
+  { desc:"8'6\" Facade Trim", qty:0, price:9.52, category:"METAL" },
+  { desc:"10'6\" Facade Trim", qty:0, price:11.76, category:"METAL" },
+  { desc:"12'6\" Facade Trim", qty:115, price:14.0, category:"METAL" },
+  { desc:"3x3 Corner Trim", qty:15, price:5.51, category:"METAL" },
+  { desc:"8'6\" GDT Post Trim BLK", qty:4, price:8.25, category:"METAL" },
+  { desc:"8'3\" Overhead Trim", qty:29, price:10.88, category:"METAL" },
+  { desc:"12'6\" J Channel", qty:31, price:5.0, category:"METAL" },
+  { desc:"Corner Rake 8'6\"", qty:8, price:10.63, category:"METAL" },
+  { desc:"Corner Rake 14'", qty:4, price:18.13, category:"METAL" },
+  { desc:"12'6\" Eave Trim", qty:10, price:10.88, category:"METAL" }
+];
 
 let orders = [];
 let receiveLedger = [];
@@ -1863,7 +2284,7 @@ let kbSeg = 'buildings';
 let editingBldId = null;
 let editingMatId = null;
 let bomLines = []; // temp BOM while editing
-let matIdCounter = 200;
+let matIdCounter = 523;
 let bldIdCounter = 100;
 let recvIdCounter = 0;
 
@@ -1915,7 +2336,7 @@ function renderInv() {
   const lowSec = document.getElementById('low-sec');
   if (low.length > 0) {
     lowSec.style.display = 'block';
-    document.getElementById('low-text').textContent = low.map(i => i.desc + ' (' + i.qty.toFixed(1) + ')').join(' · ');
+    const lowDisplay = low.slice(0, 10); document.getElementById('low-text').textContent = lowDisplay.map(i => i.desc + ' (' + i.qty.toFixed(1) + ')').join(' · ') + (low.length > 10 ? ' · …and ' + (low.length-10) + ' more' : '');
   } else lowSec.style.display = 'none';
 
   const list = document.getElementById('inv-list');
@@ -3677,6 +4098,7 @@ function confirmAndSaveReconcile() {
   reconcileReports.unshift({ id: Date.now(), ts, user, signerName, sigDataUrl, changes: [...pendingReconChanges] });
 
   silentSendReconEmail(ts, user, pendingReconChanges);
+  _autoExportToSheets(ts, user, signerName, [...pendingReconChanges]);
 
   reconCounts = {};
   pendingReconChanges = [];
@@ -3717,6 +4139,7 @@ function silentSendReconEmail(ts, user, changes) {
 function openReconReport(reportId) {
   const r = reconcileReports.find(x => x.id === reportId);
   if (!r) return;
+  _currentReconReportId = reportId;
 
   const dateStr = new Date(r.ts).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
   const timeStr = new Date(r.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -3819,6 +4242,487 @@ function openReconReport(reportId) {
   }
 
   document.getElementById('recon-report-modal').classList.add('open');
+}
+
+
+
+// ══════════════════════════════
+// AUTO GOOGLE SHEETS EXPORT (fires on every reconcile save)
+// ══════════════════════════════
+async function _autoExportToSheets(ts, user, signerName, changes) {
+  try {
+    if (!_gsAccessToken) await _refreshGSToken();
+    await _pushReconToSheets(ts, user, signerName, changes);
+  } catch(e) {
+    // Token may have expired — refresh once and retry
+    try {
+      await _refreshGSToken();
+      await _pushReconToSheets(ts, user, signerName, changes);
+    } catch(e2) {
+      console.warn('Auto Sheets export failed:', e2.message);
+      showToast('⚠ Sheets auto-export failed: ' + e2.message);
+    }
+  }
+}
+
+async function _pushReconToSheets(ts, user, signerName, changes) {
+  const SSID    = '1ygxc62WMg3aA8XkWbXo_eu3JCEqk5G9qQkBmVJQyvFQ';
+  const dateObj = new Date(ts);
+  const dateStr = dateObj.toLocaleDateString('en-US', { month:'2-digit', day:'2-digit', year:'numeric' });
+  const timeStr = dateObj.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+  const tabName = dateStr + ' ' + timeStr;  // e.g. "04/30/2026 2:45 PM"
+  const signer  = signerName || user;
+
+  const DOLLAR_FMT = { numberFormat: { type:'CURRENCY', pattern:'"$"#,##0.00' } };
+
+  // Build change map
+  const changeMap = {};
+  changes.forEach(c => { changeMap[c.desc] = c; });
+
+  // ── Build row data ──
+  // Header row
+  const rows = [[
+    'Category', 'Material', 'Unit Price',
+    'Pre-Count Qty', 'Pre-Count Value',
+    'Post-Count Qty', 'Post-Count Value',
+    'Qty Variance', 'Value Variance', 'Status'
+  ]];
+
+  inventory.forEach(item => {
+    const mat   = matLib.find(m => m.desc === item.desc);
+    const price = mat ? mat.price : (item.price || 0);
+    const chg   = changeMap[item.desc];
+    const pre   = chg ? chg.from : item.qty;
+    const post  = chg ? chg.to   : item.qty;
+    const qVar  = post - pre;
+    rows.push([
+      item.category, item.desc, price,
+      pre,  pre  * price,
+      post, post * price,
+      qVar, qVar * price,
+      qVar > 0 ? 'Increase' : qVar < 0 ? 'Decrease' : 'No Change'
+    ]);
+  });
+
+  // Totals row
+  const n = inventory.length + 1; // data rows end at n+1 (1-indexed, header on row 1)
+  rows.push([
+    'TOTALS', '', '',
+    '', `=SUM(E2:E${n})`,
+    '', `=SUM(G2:G${n})`,
+    '', `=SUM(I2:I${n})`,
+    ''
+  ]);
+
+  const numRows = rows.length;
+
+  // ── 1. Add new sheet tab to master spreadsheet ──
+  const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SSID}:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + _gsAccessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requests: [{ addSheet: { properties: { title: tabName } } }]
+    })
+  });
+  if (!addSheetRes.ok) {
+    const err = await addSheetRes.json();
+    throw new Error(err.error?.message || 'Add sheet failed');
+  }
+  const addSheetData = await addSheetRes.json();
+  const newSheetId   = addSheetData.replies[0].addSheet.properties.sheetId;
+
+  // ── 2. Write data to new tab ──
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SSID}/values:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + _gsAccessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      valueInputOption: 'USER_ENTERED',
+      data: [{ range: `${tabName}!A1`, values: rows }]
+    })
+  });
+
+  // ── 3. Format: header bold+green, dollar columns, totals bold ──
+  const dollarCols = [2, 4, 6, 8]; // C, E, G, I (0-indexed)
+  const formatRequests = [
+    // Header row — bold white on green
+    {
+      repeatCell: {
+        range: { sheetId: newSheetId, startRowIndex:0, endRowIndex:1, startColumnIndex:0, endColumnIndex:10 },
+        cell: { userEnteredFormat: {
+          textFormat: { bold:true, foregroundColor:{ red:1, green:1, blue:1 } },
+          backgroundColor: { red:0.118, green:0.435, blue:0.259 }
+        } },
+        fields: 'userEnteredFormat(textFormat,backgroundColor)'
+      }
+    },
+    // Totals row — bold
+    {
+      repeatCell: {
+        range: { sheetId: newSheetId, startRowIndex: numRows-1, endRowIndex: numRows, startColumnIndex:0, endColumnIndex:10 },
+        cell: { userEnteredFormat: { textFormat: { bold:true } } },
+        fields: 'userEnteredFormat.textFormat.bold'
+      }
+    },
+    // Column widths
+    { updateDimensionProperties: {
+      range: { sheetId: newSheetId, dimension:'COLUMNS', startIndex:0, endIndex:1 },
+      properties: { pixelSize: 130 }, fields:'pixelSize'
+    } },
+    { updateDimensionProperties: {
+      range: { sheetId: newSheetId, dimension:'COLUMNS', startIndex:1, endIndex:2 },
+      properties: { pixelSize: 300 }, fields:'pixelSize'
+    } },
+  ];
+
+  // Dollar format for price/value columns across all data rows
+  dollarCols.forEach(col => {
+    formatRequests.push({
+      repeatCell: {
+        range: { sheetId: newSheetId, startRowIndex:1, endRowIndex: numRows, startColumnIndex: col, endColumnIndex: col+1 },
+        cell: { userEnteredFormat: DOLLAR_FMT },
+        fields: 'userEnteredFormat.numberFormat'
+      }
+    });
+  });
+
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SSID}:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + _gsAccessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: formatRequests })
+  });
+
+  showToast('🟢 Saved to Google Sheets');
+}
+
+// ══════════════════════════════
+// RECONCILE EXPORT
+// ══════════════════════════════
+let _currentReconReportId = null; // track which report is open
+
+function exportReconExcel() {
+  const r = reconcileReports.find(x => x.id === _currentReconReportId);
+  const dateStr = r ? new Date(r.ts).toLocaleDateString() : new Date().toLocaleDateString();
+  const signer  = r ? (r.signerName || r.user) : (currentUser ? currentUser.name : '');
+
+  // Build a map of changes for this report
+  const changeMap = {};
+  if (r) r.changes.forEach(c => { changeMap[c.desc] = c; });
+
+  // ── Workbook ──
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Full Inventory with Variance ──
+  const invRows = [
+    ['Inventory Count Report — ' + dateStr + '  |  Conducted by: ' + signer],
+    [],
+    ['Category', 'Material', 'Unit Price', 'Pre-Count Qty', 'Pre-Count Value',
+     'Post-Count Qty', 'Post-Count Value', 'Qty Variance', 'Value Variance', 'Status']
+  ];
+
+  inventory.forEach(item => {
+    const mat    = matLib.find(m => m.desc === item.desc);
+    const price  = mat ? mat.price : (item.price || 0);
+    const change = changeMap[item.desc];
+
+    const preQty  = change ? change.from : item.qty;
+    const postQty = change ? change.to   : item.qty;
+    const preVal  = preQty  * price;
+    const postVal = postQty * price;
+    const qtyVar  = postQty - preQty;
+    const valVar  = postVal - preVal;
+    const status  = qtyVar > 0 ? 'Increase' : qtyVar < 0 ? 'Decrease' : 'No Change';
+
+    invRows.push([
+      item.category,
+      item.desc,
+      price,
+      preQty,
+      preVal,
+      postQty,
+      postVal,
+      qtyVar,
+      valVar,
+      status
+    ]);
+  });
+
+  // Totals row
+  const n = inventory.length;
+  invRows.push([]);
+  invRows.push([
+    'TOTALS', '',
+    '',
+    '',  // pre qty (no meaningful sum)
+    { f: 'SUM(E4:E' + (n + 3) + ')' },
+    '',
+    { f: 'SUM(G4:G' + (n + 3) + ')' },
+    '',
+    { f: 'SUM(I4:I' + (n + 3) + ')' },
+    ''
+  ]);
+
+  const wsInv = XLSX.utils.aoa_to_sheet(invRows);
+
+  // Column widths
+  wsInv['!cols'] = [
+    {wch:16}, {wch:42}, {wch:11}, {wch:14}, {wch:15},
+    {wch:14}, {wch:15}, {wch:13}, {wch:14}, {wch:11}
+  ];
+
+  // Merge title row A1:J1
+  wsInv['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:9} }];
+
+  XLSX.utils.book_append_sheet(wb, wsInv, 'Full Inventory');
+
+  // ── Sheet 2: Variances Only ──
+  const varRows = [
+    ['Variances Only — ' + dateStr],
+    [],
+    ['Category', 'Material', 'Unit Price', 'Before', 'Before Value',
+     'After', 'After Value', 'Qty Change', 'Value Change', 'Direction']
+  ];
+
+  if (r && r.changes.length) {
+    r.changes.forEach(c => {
+      const price    = c.price !== undefined ? c.price : 0;
+      const valBefore = c.from * price;
+      const valAfter  = c.to   * price;
+      varRows.push([
+        c.category, c.desc, price,
+        c.from, valBefore,
+        c.to,   valAfter,
+        c.diff, valAfter - valBefore,
+        c.diff > 0 ? '▲ Increase' : '▼ Decrease'
+      ]);
+    });
+    const vn = r.changes.length;
+    varRows.push([]);
+    varRows.push(['TOTALS','','','','',
+      { f:'SUM(F4:F'+(vn+3)+')' },
+      { f:'SUM(G4:G'+(vn+3)+')' },
+      { f:'SUM(H4:H'+(vn+3)+')' },
+      { f:'SUM(I4:I'+(vn+3)+')' },
+      ''
+    ]);
+  } else {
+    varRows.push(['No variances recorded — all counts matched.']);
+  }
+
+  const wsVar = XLSX.utils.aoa_to_sheet(varRows);
+  wsVar['!cols'] = [
+    {wch:16},{wch:42},{wch:11},{wch:10},{wch:14},
+    {wch:10},{wch:14},{wch:12},{wch:14},{wch:12}
+  ];
+  wsVar['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:9} }];
+  XLSX.utils.book_append_sheet(wb, wsVar, 'Variances Only');
+
+  // ── Sheet 3: Summary ──
+  let totalBefore=0, totalAfter=0, increases=0, decreases=0;
+  inventory.forEach(item => {
+    const mat   = matLib.find(m => m.desc === item.desc);
+    const price = mat ? mat.price : (item.price || 0);
+    const change = changeMap[item.desc];
+    if (change) {
+      totalBefore += change.from * price;
+      totalAfter  += change.to   * price;
+      if (change.diff > 0) increases++;
+      else if (change.diff < 0) decreases++;
+    } else {
+      const v = item.qty * price;
+      totalBefore += v;
+      totalAfter  += v;
+    }
+  });
+
+  const sumRows = [
+    ['Reconciliation Summary'],
+    [],
+    ['Date',         dateStr],
+    ['Conducted By', signer],
+    ['Total Items',  inventory.length],
+    ['Items Changed', r ? r.changes.length : 0],
+    ['Increases',    increases],
+    ['Decreases',    decreases],
+    ['No Change',    inventory.length - (r ? r.changes.length : 0)],
+    [],
+    ['Inventory Value Before', totalBefore],
+    ['Inventory Value After',  totalAfter],
+    ['Total Variance',         totalAfter - totalBefore],
+  ];
+
+  const wsSum = XLSX.utils.aoa_to_sheet(sumRows);
+  wsSum['!cols'] = [{wch:26},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsSum, 'Summary');
+
+  // ── Download ──
+  const filename = 'Inventory_Reconciliation_' + dateStr.replace(/\//g,'-') + '.xlsx';
+  XLSX.writeFile(wb, filename);
+  showToast('📊 Excel exported');
+}
+
+// ── Google Sheets export ──
+let _gsAccessToken = 'ya29.a0AQvPyIMiQOzA7ootb38VcKif7hzpyTlObG8k1XxYinD_EKTG7dsgELJtCYxe6VH3ohOZAyAA40UHggDC7pcNQdeJ3t8u6ovzPmKe-EBzw134AppF6UhxiazzMx1FwapeODrD-kZMPjNGZQsWbXoF1PvSg1lx9NEATleSSAzZSH_TbJeXm1Y48vo5kK4DWQPHM_s5PikaCgYKAeYSARESFQHGX2MiRgIwELLON81wnvqhS4g8ww0206';
+const _GS_REFRESH_TOKEN = '1//04JCRSE_CDT0iCgYIARAAGAQSNwF-L9Ir99CVC0FR-uZ4a349IVaeLLjtknaugDYzHAJAEQnM-uy8M8LVDZnZ0U4S__-K9kmUQZI';
+const _GS_CLIENT_ID     = '407408718192.apps.googleusercontent.com';
+const _GS_CLIENT_SECRET = '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';
+
+async function _refreshGSToken() {
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `client_id=${encodeURIComponent(_GS_CLIENT_ID)}&client_secret=${encodeURIComponent(_GS_CLIENT_SECRET)}&refresh_token=${encodeURIComponent(_GS_REFRESH_TOKEN)}&grant_type=refresh_token`
+  });
+  const data = await res.json();
+  if (!data.access_token) throw new Error(data.error_description || 'Token refresh failed');
+  _gsAccessToken = data.access_token;
+  return _gsAccessToken;
+}
+
+async function exportReconGoogleSheets() {
+  const btn = document.getElementById('recon-gs-btn');
+  if (btn) { btn.textContent = '⏳ Connecting…'; btn.disabled = true; }
+  try {
+    if (!_gsAccessToken) await _refreshGSToken();
+    _doGoogleSheetsExport();
+  } catch(e) {
+    if (btn) { btn.textContent = '🟢 Google Sheets'; btn.disabled = false; }
+    showToast('⚠ Auth failed: ' + e.message);
+  }
+}
+
+async function _doGoogleSheetsExport() {
+  const btn = document.getElementById('recon-gs-btn');
+  if (btn) { btn.textContent = '⏳ Exporting…'; btn.disabled = true; }
+
+  const r = reconcileReports.find(x => x.id === _currentReconReportId);
+  const dateStr = r ? new Date(r.ts).toLocaleDateString() : new Date().toLocaleDateString();
+  const signer  = r ? (r.signerName || r.user) : (currentUser ? currentUser.name : '');
+  const changeMap = {};
+  if (r) r.changes.forEach(c => { changeMap[c.desc] = c; });
+
+  try {
+    // 1. Create spreadsheet
+    const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _gsAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        properties: { title: 'Inventory Reconciliation — ' + dateStr },
+        sheets: [
+          { properties: { title: 'Full Inventory', sheetId: 0 } },
+          { properties: { title: 'Variances Only', sheetId: 1 } },
+          { properties: { title: 'Summary',        sheetId: 2 } }
+        ]
+      })
+    });
+
+    if (!createRes.ok) {
+      const err = await createRes.json();
+      if (err.error && err.error.code === 401) {
+        _gsAccessToken = null;
+        if (btn) { btn.textContent = '🟢 Google Sheets'; btn.disabled = false; }
+        showToast('⚠ Token expired — reconnect');
+        exportReconGoogleSheets();
+        return;
+      }
+      throw new Error(err.error?.message || 'Create failed');
+    }
+
+    const ss = await createRes.json();
+    const ssId = ss.spreadsheetId;
+
+    // 2. Build value arrays
+    const invData = [
+      ['Category','Material','Unit Price','Pre-Count Qty','Pre-Count Value',
+       'Post-Count Qty','Post-Count Value','Qty Variance','Value Variance','Status']
+    ];
+    inventory.forEach(item => {
+      const mat   = matLib.find(m => m.desc === item.desc);
+      const price = mat ? mat.price : (item.price || 0);
+      const chg   = changeMap[item.desc];
+      const pre   = chg ? chg.from : item.qty;
+      const post  = chg ? chg.to   : item.qty;
+      invData.push([
+        item.category, item.desc, price, pre, pre*price,
+        post, post*price, post-pre, (post-pre)*price,
+        (post-pre)>0?'Increase':(post-pre)<0?'Decrease':'No Change'
+      ]);
+    });
+
+    const varData = [
+      ['Category','Material','Unit Price','Before','Before Value',
+       'After','After Value','Qty Change','Value Change','Direction']
+    ];
+    if (r && r.changes.length) {
+      r.changes.forEach(c => {
+        const p = c.price||0;
+        varData.push([c.category,c.desc,p,c.from,c.from*p,c.to,c.to*p,
+          c.diff,(c.to-c.from)*p, c.diff>0?'▲ Increase':'▼ Decrease']);
+      });
+    } else {
+      varData.push(['No variances — all counts matched.']);
+    }
+
+    let tb=0,ta=0,inc=0,dec=0;
+    inventory.forEach(item => {
+      const mat=matLib.find(m=>m.desc===item.desc);
+      const p=mat?mat.price:(item.price||0);
+      const c=changeMap[item.desc];
+      if(c){tb+=c.from*p;ta+=c.to*p;if(c.diff>0)inc++;else if(c.diff<0)dec++;}
+      else{const v=item.qty*p;tb+=v;ta+=v;}
+    });
+
+    const sumData = [
+      ['Date',          dateStr],
+      ['Conducted By',  signer],
+      ['Total Items',   inventory.length],
+      ['Items Changed', r?r.changes.length:0],
+      ['Increases',     inc],
+      ['Decreases',     dec],
+      ['No Change',     inventory.length-(r?r.changes.length:0)],
+      [],
+      ['Value Before',  tb],
+      ['Value After',   ta],
+      ['Variance',      ta-tb]
+    ];
+
+    // 3. Batch update values
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values:batchUpdate`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _gsAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        valueInputOption: 'RAW',
+        data: [
+          { range: 'Full Inventory!A1', values: invData },
+          { range: 'Variances Only!A1', values: varData },
+          { range: 'Summary!A1',        values: sumData }
+        ]
+      })
+    });
+
+    // 4. Format headers (bold row 1 on each sheet)
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${ssId}:batchUpdate`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _gsAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [0,1,2].map(sid => ({
+        repeatCell: {
+          range: { sheetId: sid, startRowIndex:0, endRowIndex:1, startColumnIndex:0, endColumnIndex:10 },
+          cell: { userEnteredFormat: { textFormat: { bold: true }, backgroundColor: { red:.118, green:.435, blue:.259 } } },
+          fields: 'userEnteredFormat(textFormat,backgroundColor)'
+        }
+      }))})
+    });
+
+    if (btn) { btn.textContent = '🟢 Google Sheets'; btn.disabled = false; }
+    showToast('🟢 Exported to Google Sheets');
+
+    // Open the new sheet
+    window.open('https://docs.google.com/spreadsheets/d/' + ssId, '_blank');
+
+  } catch(e) {
+    if (btn) { btn.textContent = '🟢 Google Sheets'; btn.disabled = false; }
+    showToast('⚠ Export failed: ' + e.message);
+    _gsAccessToken = null;
+  }
 }
 
 function closeReconReport() {
